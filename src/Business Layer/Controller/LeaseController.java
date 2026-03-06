@@ -24,5 +24,11 @@ public class LeaseController {
     public void createLease(int tenantID, int unitID, Date start, Date end, double rent) {
         // TODO implement here
     }
+    public void checkExpiringLeases() {
+        // TODO implement here
+    }
+    handleLeaseProposal(int leaseID, double rent, int duration) {
+        // TODO implement here
+    }
 
 }
