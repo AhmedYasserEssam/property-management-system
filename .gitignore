@@ -1,0 +1,10 @@
+.env
+*.class
+*.jar
+*.log
+.metals/
+.bloop/
+.bsp/
+.vscode/
+target/
+out/

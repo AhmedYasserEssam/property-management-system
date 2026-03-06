@@ -1,0 +1,40 @@
+version: "3.9"
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: realestate-sqlserver
+    restart: unless-stopped
+
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "HelloWorld123!"
+      MSSQL_PID: "Express"
+
+    ports:
+      - "1433:1433"
+
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+      - ./schema.sql:/docker-entrypoint-initdb/schema.sql:ro
+
+    healthcheck:
+      test: /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "HelloWorld123!" -C -Q "SELECT 1" || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  db-init:
+    image: mcr.microsoft.com/mssql-tools:latest
+    container_name: realestate-db-init
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    volumes:
+      - ./schema.sql:/tmp/schema.sql:ro
+    command: /opt/mssql-tools/bin/sqlcmd -S sqlserver -U sa -P "HelloWorld123!" -i /tmp/schema.sql
+    restart: "no"
+
+volumes:
+  sqlserver_data:
