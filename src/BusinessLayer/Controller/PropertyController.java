@@ -1,10 +1,12 @@
 package BusinessLayer.Controller;
 
 import BusinessLayer.Domain.IClock;
-import BusinessLayer.Domain.MaintenanceRequest;
 import BusinessLayer.Domain.Property;
 import BusinessLayer.Repository.IMaintenanceRepository;
 import BusinessLayer.Repository.IPropertyRepository;
+import BusinessLayer.Domain.TenantMaintenanceRequest;
+import BusinessLayer.Domain.UrgentMaintenanceRequest;
+import BusinessLayer.Domain.MaintenanceRequest;
 
 import java.util.Optional;
 
@@ -16,7 +18,8 @@ public class PropertyController {
     private final IMaintenanceRepository maintenanceRepository;
     private final IClock clock;
 
-    public PropertyController(IPropertyRepository propertyRepository, IMaintenanceRepository maintenanceRepository, IClock clock) {
+    public PropertyController(IPropertyRepository propertyRepository, IMaintenanceRepository maintenanceRepository,
+            IClock clock) {
         this.propertyRepository = propertyRepository;
         this.maintenanceRepository = maintenanceRepository;
         this.clock = clock;
@@ -28,14 +31,14 @@ public class PropertyController {
         return property;
     }
 
-    public MaintenanceRequest newRequest(int unitID, String description) {
-        MaintenanceRequest request = new MaintenanceRequest(
-                0,
-                unitID,
-                description,
-                clock.getCurrentDate(),
-                "OPEN"
-        );
+    public MaintenanceRequest newTenantRequest(String unitID, String description) {
+        MaintenanceRequest request = new TenantMaintenanceRequest(unitID, description);
+        maintenanceRepository.save(request);
+        return request;
+    }
+
+    public MaintenanceRequest newUrgentRequest(String unitID, String description) {
+        MaintenanceRequest request = new UrgentMaintenanceRequest(unitID, description);
         maintenanceRepository.save(request);
         return request;
     }
