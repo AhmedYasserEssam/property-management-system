@@ -28,6 +28,7 @@ public class PropertyDB implements IPropertyRepository {
 
     @Override
     public void save(Property property) {
+        System.out.println("[RelationalPropertyDB] Property saving -> SQL Server");
         if (property.getPropertyID() == 0) {
             insert(property);
         } else {

@@ -10,13 +10,15 @@ import BusinessLayer.Controller.UnitController;
 import BusinessLayer.Domain.Clock;
 import BusinessLayer.Domain.DefaultLeaseExpiryStrategy;
 import BusinessLayer.Domain.IClock;
+import BusinessLayer.Repository.IPropertyRepository;
+import BusinessLayer.Repository.IUnitRepository;
+import BusinessLayer.Repository.PropertyStorageFactory;
 import DataLayer.DataAccess.ExpenseDB;
 import DataLayer.DataAccess.LeaseDB;
 import DataLayer.DataAccess.MaintenanceDB;
 import DataLayer.DataAccess.PaymentDB;
-import DataLayer.DataAccess.PropertyDB;
+import DataLayer.DataAccess.RelationalStorageFactory;
 import DataLayer.DataAccess.TenantDB;
-import DataLayer.DataAccess.UnitDB;
 
 /**
  * Composition root that wires concrete implementations to controller abstractions.
@@ -26,9 +28,18 @@ import DataLayer.DataAccess.UnitDB;
 public final class ApplicationFactory {
 
     private final IClock clock = Clock.getInstance();
+    private final PropertyStorageFactory storageFactory;
+
+    public ApplicationFactory() {
+        this(new RelationalStorageFactory());
+    }
+
+    public ApplicationFactory(PropertyStorageFactory storageFactory) {
+        this.storageFactory = storageFactory;
+    }
 
     public DashboardController createDashboardController() {
-        return new DashboardController(new PropertyDB());
+        return new DashboardController(storageFactory.createPropertyRepository());
     }
 
     public ExpenseController createExpenseController() {
@@ -44,7 +55,7 @@ public final class ApplicationFactory {
     }
 
     public PropertyController createPropertyController() {
-        return new PropertyController(new PropertyDB(), new MaintenanceDB(), clock);
+        return new PropertyController(storageFactory.createPropertyRepository(), new MaintenanceDB(), clock);
     }
 
     public TenantController createTenantController() {
@@ -52,6 +63,6 @@ public final class ApplicationFactory {
     }
 
     public UnitController createUnitController() {
-        return new UnitController(new UnitDB());
+        return new UnitController(storageFactory.createUnitRepository());
     }
 }

@@ -26,6 +26,7 @@ public class UnitDB implements IUnitRepository {
 
     @Override
     public void save(Unit unit) {
+        System.out.println("[RelationalUnitDB] Unit saving -> SQL Server");
         if (unit.getUnitID() == 0) {
             insert(unit);
         } else {

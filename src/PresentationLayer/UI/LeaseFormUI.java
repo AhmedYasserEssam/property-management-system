@@ -1,18 +1,12 @@
 package PresentationLayer.UI;
 
-import java.io.*;
-import java.util.*;
+import java.util.Date;
 
 /**
- * 
+ * Abstract product for the Rental UI Factory pattern.
+ * Defines the interface for lease form UI variants.
  */
-public class LeaseFormUI {
-
-    /**
-     * Default constructor
-     */
-    public LeaseFormUI() {
-    }
+public abstract class LeaseFormUI {
 
     /**
      * @param tenantID 
@@ -21,8 +15,6 @@ public class LeaseFormUI {
      * @param end 
      * @param rent
      */
-    public void submitLease(int tenantID, int unitID, Date start, Date end, double rent) {
-        // TODO implement here
-    }
+    public abstract void submitLease(int tenantID, int unitID, Date start, Date end, double rent);
 
 }

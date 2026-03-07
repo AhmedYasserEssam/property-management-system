@@ -14,10 +14,20 @@ import BusinessLayer.Domain.Payment;
 import BusinessLayer.Domain.Property;
 import BusinessLayer.Domain.Tenant;
 import BusinessLayer.Domain.Unit;
+import DataLayer.DataAccess.InMemoryStorageFactory;
+import DataLayer.DataAccess.RelationalStorageFactory;
 import DataLayer.DataAccess.UnitDB;
+import BusinessLayer.Repository.IPropertyRepository;
+import BusinessLayer.Repository.IUnitRepository;
+import BusinessLayer.Repository.PropertyStorageFactory;
+import PresentationLayer.UI.MainDashboardUI;
+import PresentationLayer.UI.RentalUIFactory;
+import PresentationLayer.UI.ShortTermRentalUIFactory;
+import PresentationLayer.UI.StandardRentalUIFactory;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
 
@@ -76,6 +86,7 @@ public class Main {
                     case 10: checkExpiringLeases(scanner);    break;
                     case 11: handleLeaseProposal(scanner);    break;
                     case 12: viewOwnerPropertyCount(scanner); break;
+                    case 13: abstractFactoryDemo();           break;
                     default:
                         System.out.println("Unknown option: " + choice);
                 }
@@ -102,6 +113,7 @@ public class Main {
         System.out.println("10. Check Expiring Leases");
         System.out.println("11. Handle Lease Proposal");
         System.out.println("12. View Owner Property Count");
+        System.out.println("13. Abstract Factory Demo");
         System.out.println(" 0. Exit");
         System.out.println("--------------------------");
     }
@@ -313,5 +325,71 @@ public class Main {
 
         int count = dashboardCtrl.getOwnerPropertyCount(ownerID);
         System.out.println("Owner " + ownerID + " has " + count + " property(ies).");
+    }
+
+    // ---- 13. Abstract Factory Demo ----
+
+    private static void abstractFactoryDemo() {
+        System.out.println();
+        System.out.println("=== Abstract Factory Pattern Demo ===");
+
+        // --- Use Case 1: Rental UI Factory ---
+        System.out.println();
+        System.out.println("--- Use Case 1: Rental UI Factory ---");
+        System.out.println();
+
+        System.out.println("Creating Standard Rental UI family...");
+        RentalUIFactory standardUIFactory = new StandardRentalUIFactory();
+        MainDashboardUI standardDashboard = new MainDashboardUI(standardUIFactory);
+        standardDashboard.getLeaseForm().submitLease(1, 101, new Date(), new Date(), 1200.00);
+        standardDashboard.getPaymentForm().submitPayment(1, 1200.00, "BANK_TRANSFER");
+        System.out.println();
+
+        System.out.println("Creating Short-Term Rental UI family...");
+        RentalUIFactory shortTermUIFactory = new ShortTermRentalUIFactory();
+        MainDashboardUI shortTermDashboard = new MainDashboardUI(shortTermUIFactory);
+        shortTermDashboard.getLeaseForm().submitLease(2, 202, new Date(), new Date(), 85.00);
+        shortTermDashboard.getPaymentForm().submitPayment(2, 425.00, "CARD");
+
+        // --- Use Case 2: Property Storage Factory ---
+        System.out.println();
+        System.out.println("--- Use Case 2: Property Storage Factory ---");
+        System.out.println();
+
+        System.out.println("Creating ApplicationFactory with InMemory storage backend...");
+        PropertyStorageFactory inMemoryStorage = new InMemoryStorageFactory();
+        ApplicationFactory inMemoryAppFactory = new ApplicationFactory(inMemoryStorage);
+        System.out.println("ApplicationFactory configured -> storage=" + inMemoryStorage.getClass().getSimpleName());
+        System.out.println();
+
+        IPropertyRepository propRepo = inMemoryStorage.createPropertyRepository();
+        Property prop = new Property(0, 1, "123 Memory Lane", "Residential");
+        propRepo.save(prop);
+        System.out.println("Property created -> ID=" + prop.getPropertyID()
+                + ", Address=" + prop.getAddress() + ", Type=" + prop.getPropertyType());
+        propRepo.findByID(prop.getPropertyID());
+        propRepo.findByOwnerID(1);
+        System.out.println();
+
+        IUnitRepository unitRepo = inMemoryStorage.createUnitRepository();
+        Unit unit = new Unit(0, "A1", 950.00, 65.0, "AVAILABLE");
+        unitRepo.save(unit);
+        System.out.println("Unit created -> ID=" + unit.getUnitID()
+                + ", Number=" + unit.getUnitNumber()
+                + ", Price=" + unit.getRentalPrice()
+                + ", Area=" + unit.getArea()
+                + ", Status=" + unit.getStatus());
+        unitRepo.findByID(unit.getUnitID());
+        System.out.println();
+
+        System.out.println("Switching to Relational storage backend...");
+        PropertyStorageFactory relationalStorage = new RelationalStorageFactory();
+        ApplicationFactory relAppFactory = new ApplicationFactory(relationalStorage);
+        System.out.println("ApplicationFactory configured -> storage=" + relationalStorage.getClass().getSimpleName());
+        System.out.println("PropertyRepository type -> " + relationalStorage.createPropertyRepository().getClass().getSimpleName());
+        System.out.println("UnitRepository type -> " + relationalStorage.createUnitRepository().getClass().getSimpleName());
+
+        System.out.println();
+        System.out.println("=== Both Abstract Factory patterns verified! ===");
     }
 }
