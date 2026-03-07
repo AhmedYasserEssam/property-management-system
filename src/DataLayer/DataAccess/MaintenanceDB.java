@@ -2,8 +2,6 @@ package DataLayer.DataAccess;
 
 import BusinessLayer.Domain.MaintenanceRequest;
 import BusinessLayer.Factory.MaintenanceRequestFactoryResolver;
-import BusinessLayer.Factory.UrgentMaintenanceFactory;
-import BusinessLayer.Factory.TenantMaintenanceFactory;
 import BusinessLayer.Repository.IMaintenanceRepository;
 
 import java.sql.Connection;
@@ -18,22 +16,10 @@ public class MaintenanceDB implements IMaintenanceRepository {
     private final IDbConnectionProvider connectionProvider;
     private final MaintenanceRequestFactoryResolver resolver; // DECLARED HERE
 
-    // no-arg delegates to full constructor — final field always initialized
-    public MaintenanceDB() {
-        this(SqlServerConnectionManager.getInstance(), buildDefaultResolver());
-    }
-
     public MaintenanceDB(IDbConnectionProvider connectionProvider,
             MaintenanceRequestFactoryResolver resolver) {
         this.connectionProvider = connectionProvider;
         this.resolver = resolver;
-    }
-
-    private static MaintenanceRequestFactoryResolver buildDefaultResolver() {
-        MaintenanceRequestFactoryResolver resolver = new MaintenanceRequestFactoryResolver();
-        resolver.register("URGENT", new UrgentMaintenanceFactory());
-        resolver.register("TENANT_REPORTED", new TenantMaintenanceFactory());
-        return resolver;
     }
 
     @Override
