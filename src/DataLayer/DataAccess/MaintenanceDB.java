@@ -1,6 +1,6 @@
 package DataLayer.DataAccess;
 
-import BusinessLayer.Domain.MaintenanceRequest;
+import BusinessLayer.Domain.MaintenanceRequests.MaintenanceRequest;
 
 /**
  * 
@@ -16,14 +16,14 @@ public class MaintenanceDB {
     /**
      * @param r
      */
-    public void save(MaintenanceRequest r) {
+    public void save(MaintenanceRequest request) {
         // TODO implement here
     }
 
     /**
      * @param r
      */
-    public void update(MaintenanceRequest r) {
+    public void update(MaintenanceRequest request) {
         // TODO implement here
     }
 
