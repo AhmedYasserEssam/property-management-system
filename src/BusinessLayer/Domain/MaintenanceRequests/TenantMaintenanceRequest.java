@@ -1,6 +1,6 @@
 package BusinessLayer.Domain.MaintenanceRequests;
 
-public class RoutineInspectionRequest extends MaintenanceRequest {
+public class TenantMaintenanceRequest extends MaintenanceRequest {
     @Override
     public String getPriority() {
         return "MEDIUM";
