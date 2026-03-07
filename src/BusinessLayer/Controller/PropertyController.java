@@ -1,28 +1,16 @@
 package BusinessLayer.Controller;
 
-import BusinessLayer.Domain.IClock;
 import BusinessLayer.Domain.Property;
-import BusinessLayer.Repository.IMaintenanceRepository;
 import BusinessLayer.Repository.IPropertyRepository;
-import BusinessLayer.Domain.TenantMaintenanceRequest;
-import BusinessLayer.Domain.UrgentMaintenanceRequest;
-import BusinessLayer.Domain.MaintenanceRequest;
-
-import java.util.Optional;
 
 /**
- * Orchestrates property and maintenance use cases.
+ * Orchestrates property use cases.
  */
 public class PropertyController {
     private final IPropertyRepository propertyRepository;
-    private final IMaintenanceRepository maintenanceRepository;
-    private final IClock clock;
 
-    public PropertyController(IPropertyRepository propertyRepository, IMaintenanceRepository maintenanceRepository,
-            IClock clock) {
+    public PropertyController(IPropertyRepository propertyRepository) {
         this.propertyRepository = propertyRepository;
-        this.maintenanceRepository = maintenanceRepository;
-        this.clock = clock;
     }
 
     public Property addProperty(String address, String type, int ownerID) {
@@ -30,29 +18,4 @@ public class PropertyController {
         propertyRepository.save(property);
         return property;
     }
-
-    public MaintenanceRequest newTenantRequest(String unitID, String description) {
-        MaintenanceRequest request = new TenantMaintenanceRequest(unitID, description);
-        maintenanceRepository.save(request);
-        return request;
-    }
-
-    public MaintenanceRequest newUrgentRequest(String unitID, String description) {
-        MaintenanceRequest request = new UrgentMaintenanceRequest(unitID, description);
-        maintenanceRepository.save(request);
-        return request;
-    }
-
-    public boolean setStatus(int reqID, String status) {
-        Optional<MaintenanceRequest> existing = maintenanceRepository.findByID(reqID);
-        if (existing.isEmpty()) {
-            return false;
-        }
-
-        MaintenanceRequest request = existing.get();
-        request.updateStatus(status);
-        maintenanceRepository.update(request);
-        return true;
-    }
-
 }

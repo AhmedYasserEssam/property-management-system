@@ -3,6 +3,7 @@ package Application;
 import BusinessLayer.Controller.DashboardController;
 import BusinessLayer.Controller.ExpenseController;
 import BusinessLayer.Controller.LeaseController;
+import BusinessLayer.Controller.MaintenanceController;
 import BusinessLayer.Controller.PaymentController;
 import BusinessLayer.Controller.PropertyController;
 import BusinessLayer.Controller.TenantController;
@@ -10,8 +11,9 @@ import BusinessLayer.Controller.UnitController;
 import BusinessLayer.Domain.Clock;
 import BusinessLayer.Domain.DefaultLeaseExpiryStrategy;
 import BusinessLayer.Domain.IClock;
-import BusinessLayer.Repository.IPropertyRepository;
-import BusinessLayer.Repository.IUnitRepository;
+import BusinessLayer.Factory.MaintenanceRequestFactoryResolver;
+import BusinessLayer.Factory.TenantMaintenanceFactory;
+import BusinessLayer.Factory.UrgentMaintenanceFactory;
 import BusinessLayer.Repository.PropertyStorageFactory;
 import DataLayer.DataAccess.ExpenseDB;
 import DataLayer.DataAccess.LeaseDB;
@@ -54,8 +56,15 @@ public final class ApplicationFactory {
         return new PaymentController(new PaymentDB(), clock);
     }
 
+    public MaintenanceController createMaintenanceController() {
+        MaintenanceRequestFactoryResolver resolver = new MaintenanceRequestFactoryResolver();
+        resolver.register("TENANT_REPORTED", new TenantMaintenanceFactory());
+        resolver.register("URGENT", new UrgentMaintenanceFactory());
+        return new MaintenanceController(new MaintenanceDB(), resolver);
+    }
+
     public PropertyController createPropertyController() {
-        return new PropertyController(storageFactory.createPropertyRepository(), new MaintenanceDB(), clock);
+        return new PropertyController(storageFactory.createPropertyRepository());
     }
 
     public TenantController createTenantController() {

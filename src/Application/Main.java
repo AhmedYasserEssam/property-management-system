@@ -1,22 +1,15 @@
 package Application;
 
-import BusinessLayer.Controller.DashboardController;
-import BusinessLayer.Controller.ExpenseController;
-import BusinessLayer.Controller.LeaseController;
-import BusinessLayer.Controller.PaymentController;
-import BusinessLayer.Controller.PropertyController;
-import BusinessLayer.Controller.TenantController;
-import BusinessLayer.Controller.UnitController;
-import BusinessLayer.Domain.Expense;
-import BusinessLayer.Domain.Lease;
 import BusinessLayer.Domain.MaintenanceRequest;
-import BusinessLayer.Domain.Payment;
 import BusinessLayer.Domain.Property;
-import BusinessLayer.Domain.Tenant;
 import BusinessLayer.Domain.Unit;
-import DataLayer.DataAccess.InMemoryStorageFactory;
+import BusinessLayer.Domain.Clock;
+import BusinessLayer.Domain.IClock;
+import BusinessLayer.Factory.MaintenanceRequestFactory;
+import BusinessLayer.Factory.MaintenanceRequestFactoryResolver;
+import BusinessLayer.Factory.TenantMaintenanceFactory;
+import BusinessLayer.Factory.UrgentMaintenanceFactory;
 import DataLayer.DataAccess.RelationalStorageFactory;
-import DataLayer.DataAccess.UnitDB;
 import BusinessLayer.Repository.IPropertyRepository;
 import BusinessLayer.Repository.IUnitRepository;
 import BusinessLayer.Repository.PropertyStorageFactory;
@@ -25,33 +18,12 @@ import PresentationLayer.UI.RentalUIFactory;
 import PresentationLayer.UI.ShortTermRentalUIFactory;
 import PresentationLayer.UI.StandardRentalUIFactory;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Date;
-import java.util.List;
 import java.util.Scanner;
 
 public class Main {
 
-    private static ApplicationFactory factory;
-    private static TenantController tenantCtrl;
-    private static PropertyController propertyCtrl;
-    private static UnitController unitCtrl;
-    private static LeaseController leaseCtrl;
-    private static PaymentController paymentCtrl;
-    private static ExpenseController expenseCtrl;
-    private static DashboardController dashboardCtrl;
-
     public static void main(String[] args) {
-        factory = new ApplicationFactory();
-        tenantCtrl = factory.createTenantController();
-        propertyCtrl = factory.createPropertyController();
-        unitCtrl = factory.createUnitController();
-        leaseCtrl = factory.createLeaseController();
-        paymentCtrl = factory.createPaymentController();
-        expenseCtrl = factory.createExpenseController();
-        dashboardCtrl = factory.createDashboardController();
-
         Scanner scanner = new Scanner(System.in);
 
         while (true) {
@@ -74,19 +46,9 @@ public class Main {
 
             try {
                 switch (choice) {
-                    case 1:  addTenant(scanner);              break;
-                    case 2:  addProperty(scanner);            break;
-                    case 3:  addUnit(scanner);                break;
-                    case 4:  createLease(scanner);            break;
-                    case 5:  recordPayment(scanner);          break;
-                    case 6:  recordExpense(scanner);          break;
-                    case 7:  submitMaintenanceRequest(scanner); break;
-                    case 8:  updateMaintenanceStatus(scanner);  break;
-                    case 9:  updateUnit(scanner);             break;
-                    case 10: checkExpiringLeases(scanner);    break;
-                    case 11: handleLeaseProposal(scanner);    break;
-                    case 12: viewOwnerPropertyCount(scanner); break;
-                    case 13: abstractFactoryDemo();           break;
+                    case 1: singletonDemo();        break;
+                    case 2: abstractFactoryDemo();   break;
+                    case 3: factoryMethodDemo();     break;
                     default:
                         System.out.println("Unknown option: " + choice);
                 }
@@ -100,234 +62,50 @@ public class Main {
     }
 
     private static void printMenu() {
-        System.out.println("=== Real Estate System ===");
-        System.out.println(" 1. Add Tenant");
-        System.out.println(" 2. Add Property");
-        System.out.println(" 3. Add Unit");
-        System.out.println(" 4. Create Lease");
-        System.out.println(" 5. Record Payment");
-        System.out.println(" 6. Record Expense");
-        System.out.println(" 7. Submit Maintenance Request");
-        System.out.println(" 8. Update Maintenance Status");
-        System.out.println(" 9. Update Unit");
-        System.out.println("10. Check Expiring Leases");
-        System.out.println("11. Handle Lease Proposal");
-        System.out.println("12. View Owner Property Count");
-        System.out.println("13. Abstract Factory Demo");
-        System.out.println(" 0. Exit");
-        System.out.println("--------------------------");
+        System.out.println("=== Real Estate System - Pattern Demos ===");
+        System.out.println("1. Singleton Pattern Demo");
+        System.out.println("2. Abstract Factory Pattern Demo");
+        System.out.println("3. Factory Method Pattern Demo");
+        System.out.println("0. Exit");
+        System.out.println("------------------------------------------");
     }
 
-    // ---- 1. Add Tenant ----
+    // ---- 1. Singleton Pattern Demo ----
 
-    private static void addTenant(Scanner sc) {
-        System.out.print("Full name: ");
-        String name = sc.nextLine().trim();
-        System.out.print("Contact info: ");
-        String contact = sc.nextLine().trim();
+    private static void singletonDemo() {
+        System.out.println();
+        System.out.println("=== Singleton Pattern Demo ===");
+        System.out.println();
 
-        Tenant tenant = tenantCtrl.addTenant(name, contact);
-        System.out.println("Tenant created -> ID=" + tenant.getTenantID()
-                + ", Name=" + tenant.getFullName()
-                + ", Contact=" + tenant.getContactInfo());
-    }
+        System.out.println("--- Clock Singleton ---");
+        IClock clock1 = Clock.getInstance();
+        IClock clock2 = Clock.getInstance();
+        System.out.println("clock1 hashCode = " + System.identityHashCode(clock1));
+        System.out.println("clock2 hashCode = " + System.identityHashCode(clock2));
+        System.out.println("Same instance?   " + (clock1 == clock2));
+        System.out.println("Current date via clock1: " + clock1.getCurrentDate());
+        System.out.println("Current date via clock2: " + clock2.getCurrentDate());
+        System.out.println();
 
-    // ---- 2. Add Property ----
-
-    private static void addProperty(Scanner sc) {
-        System.out.print("Address: ");
-        String address = sc.nextLine().trim();
-        System.out.print("Type (Residential/Commercial): ");
-        String type = sc.nextLine().trim();
-        System.out.print("Owner ID: ");
-        int ownerID = Integer.parseInt(sc.nextLine().trim());
-
-        Property property = propertyCtrl.addProperty(address, type, ownerID);
-        System.out.println("Property created -> ID=" + property.getPropertyID()
-                + ", Address=" + property.getAddress()
-                + ", Type=" + property.getPropertyType());
-    }
-
-    // ---- 3. Add Unit ----
-
-    private static void addUnit(Scanner sc) {
-        System.out.print("Unit number: ");
-        String number = sc.nextLine().trim();
-        System.out.print("Rental price: ");
-        double price = Double.parseDouble(sc.nextLine().trim());
-        System.out.print("Area (sq m): ");
-        double area = Double.parseDouble(sc.nextLine().trim());
-        System.out.print("Status (AVAILABLE/OCCUPIED): ");
-        String status = sc.nextLine().trim();
-
-        Unit unit = new Unit(0, number, price, area, status);
-        UnitDB repo = new UnitDB();
-        repo.save(unit);
-        System.out.println("Unit created -> ID=" + unit.getUnitID()
-                + ", Number=" + unit.getUnitNumber()
-                + ", Price=" + unit.getRentalPrice()
-                + ", Area=" + unit.getArea()
-                + ", Status=" + unit.getStatus());
-    }
-
-    // ---- 4. Create Lease ----
-
-    private static void createLease(Scanner sc) {
-        System.out.print("Tenant ID: ");
-        int tenantID = Integer.parseInt(sc.nextLine().trim());
-        System.out.print("Unit ID: ");
-        int unitID = Integer.parseInt(sc.nextLine().trim());
-        System.out.print("Start date (yyyy-MM-dd): ");
-        LocalDateTime start = LocalDate.parse(sc.nextLine().trim()).atStartOfDay();
-        System.out.print("End date (yyyy-MM-dd): ");
-        LocalDateTime end = LocalDate.parse(sc.nextLine().trim()).atStartOfDay();
-        System.out.print("Rent amount: ");
-        double rent = Double.parseDouble(sc.nextLine().trim());
-
-        Lease lease = leaseCtrl.createLease(tenantID, unitID, start, end, rent);
-        System.out.println("Lease created -> ID=" + lease.getLeaseID()
-                + ", Tenant=" + lease.getTenantID()
-                + ", Unit=" + lease.getUnitID()
-                + ", Rent=" + lease.getRentAmount()
-                + ", Status=" + lease.getStatus());
-    }
-
-    // ---- 5. Record Payment ----
-
-    private static void recordPayment(Scanner sc) {
-        System.out.print("Lease ID: ");
-        int leaseID = Integer.parseInt(sc.nextLine().trim());
-        System.out.print("Amount: ");
-        double amount = Double.parseDouble(sc.nextLine().trim());
-        System.out.print("Method (CASH/BANK_TRANSFER/CARD): ");
-        String method = sc.nextLine().trim();
-
-        Payment payment = paymentCtrl.recordPayment(leaseID, amount, method);
-        System.out.println("Payment recorded -> ID=" + payment.getPaymentID()
-                + ", Lease=" + payment.getLeaseID()
-                + ", Amount=" + payment.getAmount()
-                + ", Method=" + payment.getPaymentMethod()
-                + ", Date=" + payment.getPaymentDate().toLocalDate());
-    }
-
-    // ---- 6. Record Expense ----
-
-    private static void recordExpense(Scanner sc) {
-        System.out.print("Property ID: ");
-        int propertyID = Integer.parseInt(sc.nextLine().trim());
-        System.out.print("Amount: ");
-        double amount = Double.parseDouble(sc.nextLine().trim());
-        System.out.print("Category: ");
-        String category = sc.nextLine().trim();
-
-        Expense expense = expenseCtrl.recordExpense(propertyID, amount, category);
-        System.out.println("Expense recorded -> ID=" + expense.getExpenseID()
-                + ", Property=" + expense.getPropertyID()
-                + ", Amount=" + expense.getAmount()
-                + ", Category=" + expense.getCategory()
-                + ", Date=" + expense.getDate().toLocalDate());
-    }
-
-    // ---- 7. Submit Maintenance Request ----
-
-    private static void submitMaintenanceRequest(Scanner sc) {
-        System.out.print("Unit ID: ");
-        int unitID = Integer.parseInt(sc.nextLine().trim());
-        System.out.print("Issue description: ");
-        String description = sc.nextLine().trim();
-
-        MaintenanceRequest req = propertyCtrl.newRequest(unitID, description);
-        System.out.println("Request created -> ID=" + req.getRequestID()
-                + ", Unit=" + req.getUnitID()
-                + ", Issue=" + req.getIssueDescription()
-                + ", Status=" + req.getStatus());
-    }
-
-    // ---- 8. Update Maintenance Status ----
-
-    private static void updateMaintenanceStatus(Scanner sc) {
-        System.out.print("Request ID: ");
-        int reqID = Integer.parseInt(sc.nextLine().trim());
-        System.out.print("New status (OPEN/IN_PROGRESS/RESOLVED/CLOSED): ");
-        String status = sc.nextLine().trim();
-
-        boolean ok = propertyCtrl.setStatus(reqID, status);
-        if (ok) {
-            System.out.println("Request " + reqID + " updated to " + status);
-        } else {
-            System.out.println("Request " + reqID + " not found.");
+        System.out.println("--- SqlServerConnectionManager Singleton ---");
+        try {
+            DataLayer.DataAccess.SqlServerConnectionManager cm1 =
+                    DataLayer.DataAccess.SqlServerConnectionManager.getInstance();
+            DataLayer.DataAccess.SqlServerConnectionManager cm2 =
+                    DataLayer.DataAccess.SqlServerConnectionManager.getInstance();
+            System.out.println("cm1 hashCode = " + System.identityHashCode(cm1));
+            System.out.println("cm2 hashCode = " + System.identityHashCode(cm2));
+            System.out.println("Same instance? " + (cm1 == cm2));
+        } catch (Exception e) {
+            System.out.println("SqlServerConnectionManager requires DB env vars.");
+            System.out.println("Skipped (set RES_DB_URL, RES_DB_USER, RES_DB_PASSWORD to test).");
         }
+
+        System.out.println();
+        System.out.println("=== Singleton Pattern verified! ===");
     }
 
-    // ---- 9. Update Unit ----
-
-    private static void updateUnit(Scanner sc) {
-        System.out.print("Unit ID: ");
-        int unitID = Integer.parseInt(sc.nextLine().trim());
-        System.out.print("New rental price: ");
-        double price = Double.parseDouble(sc.nextLine().trim());
-        System.out.print("New area (sq m): ");
-        double area = Double.parseDouble(sc.nextLine().trim());
-        System.out.print("New status (AVAILABLE/OCCUPIED): ");
-        String status = sc.nextLine().trim();
-
-        boolean ok = unitCtrl.updateUnit(unitID, price, area, status);
-        if (ok) {
-            System.out.println("Unit " + unitID + " updated.");
-        } else {
-            System.out.println("Unit " + unitID + " not found.");
-        }
-    }
-
-    // ---- 10. Check Expiring Leases ----
-
-    private static void checkExpiringLeases(Scanner sc) {
-        System.out.print("Threshold (days): ");
-        int days = Integer.parseInt(sc.nextLine().trim());
-
-        List<Lease> leases = leaseCtrl.checkExpiringLeases(days);
-        if (leases.isEmpty()) {
-            System.out.println("No leases expiring within " + days + " days.");
-        } else {
-            System.out.println("Leases expiring within " + days + " days:");
-            for (Lease l : leases) {
-                System.out.println("  ID=" + l.getLeaseID()
-                        + ", Tenant=" + l.getTenantID()
-                        + ", Ends=" + l.getEndDate().toLocalDate()
-                        + ", Status=" + l.getStatus());
-            }
-        }
-    }
-
-    // ---- 11. Handle Lease Proposal ----
-
-    private static void handleLeaseProposal(Scanner sc) {
-        System.out.print("Lease ID: ");
-        int leaseID = Integer.parseInt(sc.nextLine().trim());
-        System.out.print("New rent amount: ");
-        double rent = Double.parseDouble(sc.nextLine().trim());
-        System.out.print("Extend by (days): ");
-        int days = Integer.parseInt(sc.nextLine().trim());
-
-        boolean ok = leaseCtrl.handleLeaseProposal(leaseID, rent, days);
-        if (ok) {
-            System.out.println("Lease " + leaseID + " updated: rent=" + rent + ", extended by " + days + " days.");
-        } else {
-            System.out.println("Lease " + leaseID + " not found.");
-        }
-    }
-
-    // ---- 12. View Owner Property Count ----
-
-    private static void viewOwnerPropertyCount(Scanner sc) {
-        System.out.print("Owner ID: ");
-        int ownerID = Integer.parseInt(sc.nextLine().trim());
-
-        int count = dashboardCtrl.getOwnerPropertyCount(ownerID);
-        System.out.println("Owner " + ownerID + " has " + count + " property(ies).");
-    }
-
-    // ---- 13. Abstract Factory Demo ----
+    // ---- 2. Abstract Factory Pattern Demo ----
 
     private static void abstractFactoryDemo() {
         System.out.println();
@@ -356,14 +134,13 @@ public class Main {
         System.out.println("--- Use Case 2: Property Storage Factory ---");
         System.out.println();
 
-        System.out.println("Creating ApplicationFactory with InMemory storage backend...");
-        PropertyStorageFactory inMemoryStorage = new InMemoryStorageFactory();
-        ApplicationFactory inMemoryAppFactory = new ApplicationFactory(inMemoryStorage);
-        System.out.println("ApplicationFactory configured -> storage=" + inMemoryStorage.getClass().getSimpleName());
+        System.out.println("Using Relational (SQL Server) storage backend...");
+        PropertyStorageFactory relationalStorage = new RelationalStorageFactory();
+        System.out.println("Factory type -> " + relationalStorage.getClass().getSimpleName());
         System.out.println();
 
-        IPropertyRepository propRepo = inMemoryStorage.createPropertyRepository();
-        Property prop = new Property(0, 1, "123 Memory Lane", "Residential");
+        IPropertyRepository propRepo = relationalStorage.createPropertyRepository();
+        Property prop = new Property(0, 1, "123 Main Street", "Residential");
         propRepo.save(prop);
         System.out.println("Property created -> ID=" + prop.getPropertyID()
                 + ", Address=" + prop.getAddress() + ", Type=" + prop.getPropertyType());
@@ -371,7 +148,7 @@ public class Main {
         propRepo.findByOwnerID(1);
         System.out.println();
 
-        IUnitRepository unitRepo = inMemoryStorage.createUnitRepository();
+        IUnitRepository unitRepo = relationalStorage.createUnitRepository();
         Unit unit = new Unit(0, "A1", 950.00, 65.0, "AVAILABLE");
         unitRepo.save(unit);
         System.out.println("Unit created -> ID=" + unit.getUnitID()
@@ -382,14 +159,48 @@ public class Main {
         unitRepo.findByID(unit.getUnitID());
         System.out.println();
 
-        System.out.println("Switching to Relational storage backend...");
-        PropertyStorageFactory relationalStorage = new RelationalStorageFactory();
-        ApplicationFactory relAppFactory = new ApplicationFactory(relationalStorage);
-        System.out.println("ApplicationFactory configured -> storage=" + relationalStorage.getClass().getSimpleName());
-        System.out.println("PropertyRepository type -> " + relationalStorage.createPropertyRepository().getClass().getSimpleName());
-        System.out.println("UnitRepository type -> " + relationalStorage.createUnitRepository().getClass().getSimpleName());
+        System.out.println("PropertyRepository type -> " + propRepo.getClass().getSimpleName());
+        System.out.println("UnitRepository type -> " + unitRepo.getClass().getSimpleName());
 
         System.out.println();
-        System.out.println("=== Both Abstract Factory patterns verified! ===");
+        System.out.println("=== Abstract Factory Pattern verified! ===");
+    }
+
+    // ---- 3. Factory Method Pattern Demo ----
+
+    private static void factoryMethodDemo() {
+        System.out.println();
+        System.out.println("=== Factory Method Pattern Demo ===");
+        System.out.println();
+
+        MaintenanceRequestFactoryResolver resolver = new MaintenanceRequestFactoryResolver();
+        resolver.register("TENANT_REPORTED", new TenantMaintenanceFactory());
+        resolver.register("URGENT", new UrgentMaintenanceFactory());
+
+        System.out.println("--- TenantMaintenanceFactory ---");
+        MaintenanceRequestFactory tenantFactory = resolver.resolve("TENANT_REPORTED");
+        MaintenanceRequest tenantReq = tenantFactory.submitRequest("101", "Leaky faucet in kitchen");
+        System.out.println("Type:          " + tenantReq.getRequestType());
+        System.out.println("Class:         " + tenantReq.getClass().getSimpleName());
+        System.out.println("Priority:      " + tenantReq.getPriority());
+        System.out.println("Assigned Team: " + tenantReq.getAssignedTeam());
+        System.out.println("Status:        " + tenantReq.getStatus());
+        System.out.println("Unit:          " + tenantReq.getUnitID());
+        System.out.println("Issue:         " + tenantReq.getIssueDescription());
+        System.out.println();
+
+        System.out.println("--- UrgentMaintenanceFactory ---");
+        MaintenanceRequestFactory urgentFactory = resolver.resolve("URGENT");
+        MaintenanceRequest urgentReq = urgentFactory.submitRequest("202", "Gas leak detected");
+        System.out.println("Type:          " + urgentReq.getRequestType());
+        System.out.println("Class:         " + urgentReq.getClass().getSimpleName());
+        System.out.println("Priority:      " + urgentReq.getPriority());
+        System.out.println("Assigned Team: " + urgentReq.getAssignedTeam());
+        System.out.println("Status:        " + urgentReq.getStatus());
+        System.out.println("Unit:          " + urgentReq.getUnitID());
+        System.out.println("Issue:         " + urgentReq.getIssueDescription());
+
+        System.out.println();
+        System.out.println("=== Factory Method Pattern verified! ===");
     }
 }
