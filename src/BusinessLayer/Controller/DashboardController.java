@@ -1,21 +1,19 @@
 package BusinessLayer.Controller;
 
+import BusinessLayer.Repository.IPropertyRepository;
+
 /**
- * 
+ * Orchestrates dashboard queries.
  */
 public class DashboardController {
+    private final IPropertyRepository propertyRepository;
 
-    /**
-     * Default constructor
-     */
-    public DashboardController() {
+    public DashboardController(IPropertyRepository propertyRepository) {
+        this.propertyRepository = propertyRepository;
     }
 
-    /**
-     * @param ownerID
-     */
-    public void getOwnerSummary(int ownerID) {
-        // TODO implement here
+    public int getOwnerPropertyCount(int ownerID) {
+        return propertyRepository.findByOwnerID(ownerID).size();
     }
 
 }

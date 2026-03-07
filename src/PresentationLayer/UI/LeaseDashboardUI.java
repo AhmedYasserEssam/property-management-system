@@ -1,5 +1,8 @@
 package PresentationLayer.UI;
 
+import java.io.*;
+import java.util.*;
+
 /**
  * 
  */
@@ -14,7 +17,7 @@ public class LeaseDashboardUI {
     /**
      * @param alerts
      */
-    public void showLeaseAlert(void alerts) {
+    public void showLeaseAlert(Object alerts) {
         // TODO implement here
     }
 
@@ -22,7 +25,7 @@ public class LeaseDashboardUI {
      * @param rent
      * @param duration
      */
-    public void proposeNewTerms(void rent, void duration) {
+    public void proposeNewTerms(double rent, int duration) {
         // TODO implement here
     }
 

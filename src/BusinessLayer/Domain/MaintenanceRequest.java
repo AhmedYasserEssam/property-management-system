@@ -1,36 +1,54 @@
 package BusinessLayer.Domain;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 /**
- * 
+ * Maintenance request domain entity.
  */
 public class MaintenanceRequest {
+    private int requestID;
+    private int unitID;
+    private String issueDescription;
+    private LocalDateTime requestDate;
+    private String status;
 
-    /**
-     * Default constructor
-     */
     public MaintenanceRequest() {
     }
 
-    /**
-     * 
-     */
-    private int requestID;
+    public MaintenanceRequest(int requestID, int unitID, String issueDescription, LocalDateTime requestDate, String status) {
+        this.requestID = requestID;
+        this.unitID = unitID;
+        this.issueDescription = issueDescription;
+        this.requestDate = requestDate;
+        this.status = status;
+    }
 
-    /**
-     * 
-     */
-    private String issueDescription;
+    public int getRequestID() {
+        return requestID;
+    }
 
-    /**
-     * 
-     */
-    private Date requestDate;
+    public void setRequestID(int requestID) {
+        this.requestID = requestID;
+    }
 
-    /**
-     * 
-     */
-    private String status;
+    public int getUnitID() {
+        return unitID;
+    }
+
+    public String getIssueDescription() {
+        return issueDescription;
+    }
+
+    public LocalDateTime getRequestDate() {
+        return requestDate;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void updateStatus(String status) {
+        this.status = status;
+    }
 
 }

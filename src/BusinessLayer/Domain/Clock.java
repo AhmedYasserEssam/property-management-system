@@ -1,24 +1,26 @@
 package BusinessLayer.Domain;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 /**
- * 
+ * System clock abstraction implementation.
  */
-public class Clock {
+public class Clock implements IClock {
+    private static volatile Clock instance;
 
-    /**
-     * Default constructor
-     */
-    public Clock() {
+    private Clock() {}
+
+    public static Clock getInstance() {
+        if (instance == null) {
+            synchronized (Clock.class) {
+                if (instance == null) instance = new Clock();
+            }
+        }
+        return instance;
     }
 
-    /**
-     * @return
-     */
-    public Date getCurrentDate() {
-        // TODO implement here
-        return null;
+    @Override
+    public LocalDateTime getCurrentDate() {
+        return LocalDateTime.now();
     }
-
 }

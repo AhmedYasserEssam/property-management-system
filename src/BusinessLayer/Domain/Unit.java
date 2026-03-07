@@ -1,46 +1,54 @@
 package BusinessLayer.Domain;
 
 /**
- * 
+ * Unit domain entity.
  */
 public class Unit {
+    private int unitID;
+    private String unitNumber;
+    private double rentalPrice;
+    private double area;
+    private String status;
 
-    /**
-     * Default constructor
-     */
     public Unit() {
     }
 
-    /**
-     * 
-     */
-    private int unitID;
+    public Unit(int unitID, String unitNumber, double rentalPrice, double area, String status) {
+        this.unitID = unitID;
+        this.unitNumber = unitNumber;
+        this.rentalPrice = rentalPrice;
+        this.area = area;
+        this.status = status;
+    }
 
-    /**
-     * 
-     */
-    private String unitNumber;
+    public int getUnitID() {
+        return unitID;
+    }
 
-    /**
-     * 
-     */
-    private double rentalPrice;
+    public void setUnitID(int unitID) {
+        this.unitID = unitID;
+    }
 
-    /**
-     * 
-     */
-    private double area;
+    public String getUnitNumber() {
+        return unitNumber;
+    }
 
-    /**
-     * 
-     */
-    private String status;
+    public double getRentalPrice() {
+        return rentalPrice;
+    }
 
-    /**
-     * @param status
-     */
-    public void setStatus(String status) {
-        // TODO implement here
+    public double getArea() {
+        return area;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void updateDetails(double rentalPrice, double area, String status) {
+        this.rentalPrice = rentalPrice;
+        this.area = area;
+        this.status = status;
     }
 
 }

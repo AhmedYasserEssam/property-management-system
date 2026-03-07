@@ -1,22 +1,22 @@
 package BusinessLayer.Controller;
 
+import BusinessLayer.Domain.Tenant;
+import BusinessLayer.Repository.ITenantRepository;
+
 /**
- * 
+ * Orchestrates tenant use cases.
  */
 public class TenantController {
+    private final ITenantRepository tenantRepository;
 
-    /**
-     * Default constructor
-     */
-    public TenantController() {
+    public TenantController(ITenantRepository tenantRepository) {
+        this.tenantRepository = tenantRepository;
     }
 
-    /**
-     * @param name
-     * @param contact
-     */
-    public void addTenant(String name, String contact) {
-        // TODO implement here
+    public Tenant addTenant(String name, String contact) {
+        Tenant tenant = new Tenant(0, name, contact);
+        tenantRepository.save(tenant);
+        return tenant;
     }
 
 }

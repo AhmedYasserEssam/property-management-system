@@ -1,43 +1,54 @@
 package BusinessLayer.Domain;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 /**
- * 
+ * Expense domain entity.
  */
 public class Expense {
+    private int expenseID;
+    private int propertyID;
+    private double amount;
+    private String category;
+    private LocalDateTime date;
 
-    /**
-     * Default constructor
-     */
     public Expense() {
     }
 
-    /**
-     * 
-     */
-    private int expenseID;
+    public Expense(int expenseID, int propertyID, double amount, String category, LocalDateTime date) {
+        this.expenseID = expenseID;
+        this.propertyID = propertyID;
+        this.amount = amount;
+        this.category = category;
+        this.date = date;
+    }
 
-    /**
-     * 
-     */
-    private double amount;
+    public int getExpenseID() {
+        return expenseID;
+    }
 
-    /**
-     * 
-     */
-    private String category;
+    public void setExpenseID(int expenseID) {
+        this.expenseID = expenseID;
+    }
 
-    /**
-     * 
-     */
-    private Date date;
+    public int getPropertyID() {
+        return propertyID;
+    }
 
-    /**
-     * 
-     */
-    public void calculateNetProfit() {
-        // TODO implement here
+    public double getAmount() {
+        return amount;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public LocalDateTime getDate() {
+        return date;
+    }
+
+    public void recategorize(String category) {
+        this.category = category;
     }
 
 }

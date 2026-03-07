@@ -1,5 +1,8 @@
 package BusinessLayer.Domain;
 
+import java.io.*;
+import java.util.*;
+
 /**
  * 
  */
@@ -25,5 +28,6 @@ public class Owner {
      * 
      */
     private String contactInfo;
+
 
 }

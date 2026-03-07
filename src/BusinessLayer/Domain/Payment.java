@@ -1,36 +1,50 @@
 package BusinessLayer.Domain;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 /**
- * 
+ * Payment domain entity.
  */
 public class Payment {
+    private int paymentID;
+    private int leaseID;
+    private double amount;
+    private LocalDateTime paymentDate;
+    private String paymentMethod;
 
-    /**
-     * Default constructor
-     */
     public Payment() {
     }
 
-    /**
-     * 
-     */
-    private int paymentID;
+    public Payment(int paymentID, int leaseID, double amount, LocalDateTime paymentDate, String paymentMethod) {
+        this.paymentID = paymentID;
+        this.leaseID = leaseID;
+        this.amount = amount;
+        this.paymentDate = paymentDate;
+        this.paymentMethod = paymentMethod;
+    }
 
-    /**
-     * 
-     */
-    private double amount;
+    public int getPaymentID() {
+        return paymentID;
+    }
 
-    /**
-     * 
-     */
-    private Date paymentDate;
+    public void setPaymentID(int paymentID) {
+        this.paymentID = paymentID;
+    }
 
-    /**
-     * 
-     */
-    private String paymentMethod;
+    public int getLeaseID() {
+        return leaseID;
+    }
+
+    public double getAmount() {
+        return amount;
+    }
+
+    public LocalDateTime getPaymentDate() {
+        return paymentDate;
+    }
+
+    public String getPaymentMethod() {
+        return paymentMethod;
+    }
 
 }

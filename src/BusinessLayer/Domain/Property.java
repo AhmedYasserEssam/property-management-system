@@ -1,29 +1,43 @@
 package BusinessLayer.Domain;
 
 /**
- * 
+ * Property domain entity.
  */
 public class Property {
+    private int propertyID;
+    private int ownerID;
+    private String address;
+    private String propertyType;
 
-    /**
-     * Default constructor
-     */
     public Property() {
     }
 
-    /**
-     * 
-     */
-    private int propertyID;
+    public Property(int propertyID, int ownerID, String address, String propertyType) {
+        this.propertyID = propertyID;
+        this.ownerID = ownerID;
+        this.address = address;
+        this.propertyType = propertyType;
+    }
 
-    /**
-     * 
-     */
-    private String address;
+    public int getPropertyID() {
+        return propertyID;
+    }
 
-    /**
-     * 
-     */
-    private String propertyType;
+    public void setPropertyID(int propertyID) {
+        this.propertyID = propertyID;
+    }
+
+    public int getOwnerID() {
+        return ownerID;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public String getPropertyType() {
+        return propertyType;
+    }
+
 
 }

@@ -1,23 +1,16 @@
 package PresentationLayer.UI;
 
 /**
- * 
+ * Abstract product for the Rental UI Factory pattern.
+ * Defines the interface for payment form UI variants.
  */
-public class PaymentFormUI {
+public abstract class PaymentFormUI {
 
     /**
-     * Default constructor
-     */
-    public PaymentFormUI() {
-    }
-
-    /**
-     * @param leaseID
-     * @param amount
+     * @param leaseID 
+     * @param amount 
      * @param method
      */
-    public void submitPayment(int leaseID, double amount, String method) {
-        // TODO implement here
-    }
+    public abstract void submitPayment(int leaseID, double amount, String method);
 
 }
