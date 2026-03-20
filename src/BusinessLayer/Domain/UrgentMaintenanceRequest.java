@@ -12,25 +12,4 @@ public class UrgentMaintenanceRequest extends MaintenanceRequest {
             LocalDateTime requestDate, String status) {
         super(requestID, unitID, issueDescription, requestDate, status);
     }
-
-    @Override
-    public String getPriority() {
-        return "CRITICAL";
-    }
-
-    @Override
-    public String getAssignedTeam() {
-        return "Emergency Crew";
-    }
-
-    @Override
-    public String getInitialStatus() {
-        return "DISPATCHED";
-    }
-
-    @Override
-    public String getRequestType() {
-        return "URGENT";
-    }
-
 }

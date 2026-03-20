@@ -2,27 +2,31 @@ package BusinessLayer.Domain;
 
 import java.time.LocalDateTime;
 
-public abstract class MaintenanceRequest {
+class MaintenanceRequest {
 
     private String requestID;
     private String unitID;
     private String issueDescription;
     private LocalDateTime requestDate;
     private String status;
+    private final RequestType requestType;
 
     public MaintenanceRequest(String requestID, String unitID, String issueDescription, LocalDateTime requestDate,
-            String status) {
+            String status, RequestType requestType) {
         this.requestID = requestID;
         this.unitID = unitID;
         this.issueDescription = issueDescription;
         this.requestDate = requestDate;
         this.status = status;
+        this.requestType = requestType;
     }
 
-    public MaintenanceRequest(String unitID, String issueDescription) {
+    public MaintenanceRequest(String unitID, String issueDescription, RequestType requestType) {
         this.unitID = unitID;
         this.issueDescription = issueDescription;
         this.status = "TO BE DETERMINED";
+        this.requestType = requestType;
+
     }
 
     public String getRequestID() {
@@ -53,11 +57,19 @@ public abstract class MaintenanceRequest {
         this.status = status;
     }
 
-    public abstract String getPriority();
+    public String getPriority() {
+        return requestType.getPriority();
+    }
 
-    public abstract String getAssignedTeam();
+    public String getAssignedTeam() {
+        return requestType.getAssignedTeam();
+    }
 
-    public abstract String getInitialStatus();
+    public String getInitialStatus() {
+        return requestType.getInitialStatus();
+    }
 
-    public abstract String getRequestType();
+    public String getRequestType() {
+        return requestType.getRequestType();
+    }
 }
