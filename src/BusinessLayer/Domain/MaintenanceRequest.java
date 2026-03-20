@@ -2,7 +2,7 @@ package BusinessLayer.Domain;
 
 import java.time.LocalDateTime;
 
-class MaintenanceRequest {
+public class MaintenanceRequest {
 
     private String requestID;
     private String unitID;
