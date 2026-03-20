@@ -9,23 +9,23 @@ public class MaintenanceRequest {
     private String issueDescription;
     private LocalDateTime requestDate;
     private String status;
-    private final RequestType requestType;
+    private final RequestMetaData metadata;
 
     public MaintenanceRequest(String requestID, String unitID, String issueDescription, LocalDateTime requestDate,
-            String status, RequestType requestType) {
+            String status, RequestMetaData metadata) {
         this.requestID = requestID;
         this.unitID = unitID;
         this.issueDescription = issueDescription;
         this.requestDate = requestDate;
         this.status = status;
-        this.requestType = requestType;
+        this.metadata = metadata;
     }
 
-    public MaintenanceRequest(String unitID, String issueDescription, RequestType requestType) {
+    public MaintenanceRequest(String unitID, String issueDescription, RequestMetaData metadata) {
         this.unitID = unitID;
         this.issueDescription = issueDescription;
         this.status = "TO BE DETERMINED";
-        this.requestType = requestType;
+        this.metadata = metadata;
 
     }
 
@@ -58,18 +58,14 @@ public class MaintenanceRequest {
     }
 
     public String getPriority() {
-        return requestType.getPriority();
+        return metadata.getPriority();
     }
 
     public String getAssignedTeam() {
-        return requestType.getAssignedTeam();
+        return metadata.getAssignedTeam();
     }
 
     public String getInitialStatus() {
-        return requestType.getInitialStatus();
-    }
-
-    public String getRequestType() {
-        return requestType.getRequestType();
+        return metadata.getInitialStatus();
     }
 }

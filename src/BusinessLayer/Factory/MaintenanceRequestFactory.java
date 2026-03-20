@@ -1,14 +1,14 @@
 package BusinessLayer.Factory;
 
 import java.time.LocalDateTime;
-import BusinessLayer.Domain.RequestType;
+import BusinessLayer.Domain.RequestMetaData;
 import BusinessLayer.Domain.MaintenanceRequest;
 
 public abstract class MaintenanceRequestFactory {
-    protected final RequestType requestType;
+    protected final RequestMetaData metadata;
 
-    protected MaintenanceRequestFactory(RequestType requestType) {
-        this.requestType = requestType;
+    protected MaintenanceRequestFactory(RequestMetaData metadata) {
+        this.metadata = metadata;
     }
 
     public abstract MaintenanceRequest createRequest(String unitID, String description);
