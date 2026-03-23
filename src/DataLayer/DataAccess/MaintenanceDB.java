@@ -32,6 +32,9 @@ public class MaintenanceDB implements IMaintenanceRepository {
     }
 
     private void insert(MaintenanceRequest request) {
+        if (request.getRequestDate() == null) {
+            throw new IllegalArgumentException("requestDate cannot be null when inserting maintenance request");
+        }
         String sql = "INSERT INTO MaintenanceRequests (unitID, issueDescription, requestDate, status, requestType) " +
                 "VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = connectionProvider.getConnection();
@@ -53,6 +56,9 @@ public class MaintenanceDB implements IMaintenanceRepository {
     }
 
     private void updateAll(MaintenanceRequest request) {
+        if (request.getRequestDate() == null) {
+            throw new IllegalArgumentException("requestDate cannot be null when updating maintenance request");
+        }
         String sql = "UPDATE MaintenanceRequests SET unitID = ?, issueDescription = ?, requestDate = ?, status = ? " +
                 "WHERE requestID = ?";
         try (Connection conn = connectionProvider.getConnection();

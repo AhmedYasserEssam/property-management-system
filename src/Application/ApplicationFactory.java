@@ -12,15 +12,20 @@ import BusinessLayer.Domain.Clock;
 import BusinessLayer.Domain.DefaultLeaseExpiryStrategy;
 import BusinessLayer.Domain.IClock;
 import BusinessLayer.Factory.MaintenanceRequestFactoryResolver;
+import BusinessLayer.Factory.RequestMetaDataFactory;
 import BusinessLayer.Factory.TenantMaintenanceFactory;
 import BusinessLayer.Factory.UrgentMaintenanceFactory;
+import BusinessLayer.Repository.IPaymentRepository;
 import BusinessLayer.Repository.PropertyStorageFactory;
 import DataLayer.DataAccess.ExpenseDB;
 import DataLayer.DataAccess.LeaseDB;
+import DataLayer.DataAccess.LoggingPaymentRepositoryDecorator;
 import DataLayer.DataAccess.MaintenanceDB;
 import DataLayer.DataAccess.PaymentDB;
 import DataLayer.DataAccess.RelationalStorageFactory;
+import DataLayer.DataAccess.SqlServerConnectionManager;
 import DataLayer.DataAccess.TenantDB;
+import DataLayer.DataAccess.ValidatingPaymentRepositoryDecorator;
 
 /**
  * Composition root that wires concrete implementations to controller abstractions.
@@ -53,14 +58,24 @@ public final class ApplicationFactory {
     }
 
     public PaymentController createPaymentController() {
-        return new PaymentController(new PaymentDB(), clock);
+        IPaymentRepository paymentRepository = new PaymentDB();
+        paymentRepository = new ValidatingPaymentRepositoryDecorator(paymentRepository);
+        paymentRepository = new LoggingPaymentRepositoryDecorator(paymentRepository);
+        return new PaymentController(paymentRepository, clock);
     }
 
     public MaintenanceController createMaintenanceController() {
+        RequestMetaDataFactory metaFactory = RequestMetaDataFactory.getInstance();
         MaintenanceRequestFactoryResolver resolver = new MaintenanceRequestFactoryResolver();
-        resolver.register("TENANT_REPORTED", new TenantMaintenanceFactory());
-        resolver.register("URGENT", new UrgentMaintenanceFactory());
-        return new MaintenanceController(new MaintenanceDB(), resolver);
+        resolver.register(
+            "TENANT_REPORTED",
+            new TenantMaintenanceFactory(
+                metaFactory.getOrCreate("TENANT_REPORTED", "MEDIUM", "General Maintenance", "PENDING_REVIEW")));
+        resolver.register(
+            "URGENT",
+            new UrgentMaintenanceFactory(
+                metaFactory.getOrCreate("URGENT", "CRITICAL", "Emergency Crew", "IN_PROGRESS")));
+        return new MaintenanceController(new MaintenanceDB(SqlServerConnectionManager.getInstance(), resolver), resolver);
     }
 
     public PropertyController createPropertyController() {

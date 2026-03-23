@@ -1,15 +1,23 @@
 package Application;
 
 import BusinessLayer.Domain.MaintenanceRequest;
+import BusinessLayer.Domain.EscalationMaintenanceRequestDecorator;
+import BusinessLayer.Domain.Payment;
 import BusinessLayer.Domain.Property;
+import BusinessLayer.Domain.RequestMetaData;
+import BusinessLayer.Domain.SlaMaintenanceRequestDecorator;
 import BusinessLayer.Domain.Unit;
 import BusinessLayer.Domain.Clock;
 import BusinessLayer.Domain.IClock;
 import BusinessLayer.Factory.MaintenanceRequestFactory;
 import BusinessLayer.Factory.MaintenanceRequestFactoryResolver;
+import BusinessLayer.Factory.RequestMetaDataFactory;
 import BusinessLayer.Factory.TenantMaintenanceFactory;
 import BusinessLayer.Factory.UrgentMaintenanceFactory;
+import BusinessLayer.Repository.IPaymentRepository;
 import DataLayer.DataAccess.RelationalStorageFactory;
+import DataLayer.DataAccess.LoggingPaymentRepositoryDecorator;
+import DataLayer.DataAccess.ValidatingPaymentRepositoryDecorator;
 import BusinessLayer.Repository.IPropertyRepository;
 import BusinessLayer.Repository.IUnitRepository;
 import BusinessLayer.Repository.PropertyStorageFactory;
@@ -18,7 +26,12 @@ import PresentationLayer.UI.RentalUIFactory;
 import PresentationLayer.UI.ShortTermRentalUIFactory;
 import PresentationLayer.UI.StandardRentalUIFactory;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Scanner;
 
 public class Main {
@@ -49,6 +62,9 @@ public class Main {
                     case 1: singletonDemo();        break;
                     case 2: abstractFactoryDemo();   break;
                     case 3: factoryMethodDemo();     break;
+                    case 4: flyweightDemo();         break;
+                    case 5: maintenanceDecoratorFlyweightDemo(); break;
+                    case 6: paymentDecoratorDemo(); break;
                     default:
                         System.out.println("Unknown option: " + choice);
                 }
@@ -66,6 +82,9 @@ public class Main {
         System.out.println("1. Singleton Pattern Demo");
         System.out.println("2. Abstract Factory Pattern Demo");
         System.out.println("3. Factory Method Pattern Demo");
+        System.out.println("4. Flyweight Pattern Demo");
+        System.out.println("5. Maintenance Decorator + Flyweight Test");
+        System.out.println("6. Payment Decorator Test");
         System.out.println("0. Exit");
         System.out.println("------------------------------------------");
     }
@@ -173,9 +192,16 @@ public class Main {
         System.out.println("=== Factory Method Pattern Demo ===");
         System.out.println();
 
+        RequestMetaDataFactory metaFactory = RequestMetaDataFactory.getInstance();
         MaintenanceRequestFactoryResolver resolver = new MaintenanceRequestFactoryResolver();
-        resolver.register("TENANT_REPORTED", new TenantMaintenanceFactory());
-        resolver.register("URGENT", new UrgentMaintenanceFactory());
+        resolver.register(
+            "TENANT_REPORTED",
+            new TenantMaintenanceFactory(
+                metaFactory.getOrCreate("TENANT_REPORTED", "MEDIUM", "General Maintenance", "PENDING_REVIEW")));
+        resolver.register(
+            "URGENT",
+            new UrgentMaintenanceFactory(
+                metaFactory.getOrCreate("URGENT", "CRITICAL", "Emergency Crew", "IN_PROGRESS")));
 
         System.out.println("--- TenantMaintenanceFactory ---");
         MaintenanceRequestFactory tenantFactory = resolver.resolve("TENANT_REPORTED");
@@ -202,5 +228,140 @@ public class Main {
 
         System.out.println();
         System.out.println("=== Factory Method Pattern verified! ===");
+    }
+
+    // ---- 4. Flyweight Pattern Demo ----
+
+    private static void flyweightDemo() {
+        System.out.println();
+        System.out.println("=== Flyweight Pattern Demo ===");
+        System.out.println();
+
+        RequestMetaDataFactory metaDataFactory = RequestMetaDataFactory.getInstance();
+
+        RequestMetaData tenantMetaA = metaDataFactory.getOrCreate(
+                "TENANT_REPORTED", "MEDIUM", "General Maintenance", "PENDING_REVIEW");
+        RequestMetaData tenantMetaB = metaDataFactory.getOrCreate(
+                "TENANT_REPORTED", "MEDIUM", "General Maintenance", "PENDING_REVIEW");
+        RequestMetaData urgentMeta = metaDataFactory.getOrCreate(
+                "URGENT", "CRITICAL", "Emergency Crew", "IN_PROGRESS");
+
+        System.out.println("tenantMetaA identity: " + System.identityHashCode(tenantMetaA));
+        System.out.println("tenantMetaB identity: " + System.identityHashCode(tenantMetaB));
+        System.out.println("urgentMeta identity:  " + System.identityHashCode(urgentMeta));
+        System.out.println();
+
+        boolean sameIntrinsicStateShared = tenantMetaA == tenantMetaB;
+        boolean differentIntrinsicStateSeparated = tenantMetaA != urgentMeta;
+
+        System.out.println("Same intrinsic data reuses object?        " + sameIntrinsicStateShared);
+        System.out.println("Different intrinsic data creates new one? " + differentIntrinsicStateSeparated);
+        System.out.println("Sample metadata string: " + tenantMetaA);
+        System.out.println();
+
+        if (sameIntrinsicStateShared && differentIntrinsicStateSeparated) {
+            System.out.println("=== Flyweight Pattern verified! ===");
+        } else {
+            System.out.println("=== Flyweight Pattern check failed ===");
+        }
+    }
+
+    // ---- 5. Maintenance Decorator + Flyweight Test ----
+
+    private static void maintenanceDecoratorFlyweightDemo() {
+        System.out.println();
+        System.out.println("=== Maintenance Decorator + Flyweight Test ===");
+        System.out.println();
+
+        RequestMetaDataFactory metaFactory = RequestMetaDataFactory.getInstance();
+        RequestMetaData sharedMetaA = metaFactory.getOrCreate(
+                "TENANT_REPORTED", "MEDIUM", "General Maintenance", "PENDING_REVIEW");
+        RequestMetaData sharedMetaB = metaFactory.getOrCreate(
+                "TENANT_REPORTED", "MEDIUM", "General Maintenance", "PENDING_REVIEW");
+
+        MaintenanceRequest baseRequest = new MaintenanceRequest(
+                "REQ-100",
+                "101",
+                "Broken sink",
+                LocalDateTime.now().minusHours(8),
+                "PENDING_REVIEW",
+                sharedMetaA);
+
+        MaintenanceRequest slaDecorated = new SlaMaintenanceRequestDecorator(baseRequest, Duration.ofHours(2));
+        MaintenanceRequest escalatedDecorated = new EscalationMaintenanceRequestDecorator(
+                slaDecorated,
+                Duration.ofHours(4),
+                "CRITICAL");
+
+        boolean flyweightReused = sharedMetaA == sharedMetaB;
+        boolean decoratorKeepsFlyweight = escalatedDecorated.getMetadata() == sharedMetaA;
+        boolean typeForwarded = "TENANT_REPORTED".equals(escalatedDecorated.getRequestType());
+        boolean escalationApplied = "CRITICAL".equals(escalatedDecorated.getPriority());
+        boolean slaApplied = "SLA_BREACHED".equals(escalatedDecorated.getStatus());
+
+        System.out.println("Flyweight reused for same metadata?      " + flyweightReused);
+        System.out.println("Decorator keeps shared flyweight object? " + decoratorKeepsFlyweight);
+        System.out.println("Request type preserved through decorator? " + typeForwarded);
+        System.out.println("Escalation decorator applied?             " + escalationApplied);
+        System.out.println("SLA decorator applied?                    " + slaApplied);
+
+        if (flyweightReused && decoratorKeepsFlyweight && typeForwarded && escalationApplied && slaApplied) {
+            System.out.println("=== Maintenance Decorator + Flyweight verified! ===");
+        } else {
+            System.out.println("=== Maintenance Decorator + Flyweight check failed ===");
+        }
+    }
+
+    // ---- 6. Payment Decorator Test ----
+
+    private static void paymentDecoratorDemo() {
+        System.out.println();
+        System.out.println("=== Payment Decorator Test ===");
+        System.out.println();
+
+        IPaymentRepository inMemoryRepo = new InMemoryPaymentRepository();
+        IPaymentRepository decoratedRepo = new LoggingPaymentRepositoryDecorator(
+                new ValidatingPaymentRepositoryDecorator(inMemoryRepo));
+
+        Payment validPayment = new Payment(0, 1, 500.0, LocalDateTime.now(), "CARD");
+        decoratedRepo.save(validPayment);
+        Optional<Payment> found = decoratedRepo.findByID(validPayment.getPaymentID());
+
+        boolean validSavedAndFound = found.isPresent() && found.get().getAmount() == 500.0;
+
+        boolean invalidRejected;
+        try {
+            decoratedRepo.save(new Payment(0, 0, -5.0, LocalDateTime.now(), ""));
+            invalidRejected = false;
+        } catch (IllegalArgumentException ex) {
+            invalidRejected = true;
+        }
+
+        System.out.println("Valid payment saved and found? " + validSavedAndFound);
+        System.out.println("Invalid payment rejected?      " + invalidRejected);
+
+        if (validSavedAndFound && invalidRejected) {
+            System.out.println("=== Payment Decorator verified! ===");
+        } else {
+            System.out.println("=== Payment Decorator check failed ===");
+        }
+    }
+
+    private static final class InMemoryPaymentRepository implements IPaymentRepository {
+        private final Map<Integer, Payment> payments = new HashMap<>();
+        private int nextId = 1;
+
+        @Override
+        public void save(Payment payment) {
+            if (payment.getPaymentID() == 0) {
+                payment.setPaymentID(nextId++);
+            }
+            payments.put(payment.getPaymentID(), payment);
+        }
+
+        @Override
+        public Optional<Payment> findByID(int paymentID) {
+            return Optional.ofNullable(payments.get(paymentID));
+        }
     }
 }
