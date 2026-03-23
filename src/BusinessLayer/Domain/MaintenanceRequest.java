@@ -1,8 +1,12 @@
 package BusinessLayer.Domain;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 public class MaintenanceRequest {
+
+    public static final String STATUS_TO_BE_DETERMINED = "TO BE DETERMINED";
+    public static final String STATUS_COMPLETED = "COMPLETED";
 
     private String requestID;
     private String unitID;
@@ -14,18 +18,19 @@ public class MaintenanceRequest {
     public MaintenanceRequest(String requestID, String unitID, String issueDescription, LocalDateTime requestDate,
             String status, RequestMetaData metadata) {
         this.requestID = requestID;
-        this.unitID = unitID;
-        this.issueDescription = issueDescription;
-        this.requestDate = requestDate;
-        this.status = status;
-        this.metadata = metadata;
+        this.unitID = requireNonBlank(unitID, "unitID");
+        this.issueDescription = requireNonBlank(issueDescription, "issueDescription");
+        this.requestDate = Objects.requireNonNull(requestDate, "requestDate cannot be null");
+        this.status = requireNonBlank(status, "status");
+        this.metadata = Objects.requireNonNull(metadata, "metadata cannot be null");
     }
 
     public MaintenanceRequest(String unitID, String issueDescription, RequestMetaData metadata) {
-        this.unitID = unitID;
-        this.issueDescription = issueDescription;
-        this.status = "TO BE DETERMINED";
-        this.metadata = metadata;
+        this.unitID = requireNonBlank(unitID, "unitID");
+        this.issueDescription = requireNonBlank(issueDescription, "issueDescription");
+        this.requestDate = LocalDateTime.now();
+        this.status = STATUS_TO_BE_DETERMINED;
+        this.metadata = Objects.requireNonNull(metadata, "metadata cannot be null");
 
     }
 
@@ -54,11 +59,19 @@ public class MaintenanceRequest {
     }
 
     public void updateStatus(String status) {
-        this.status = status;
+        this.status = requireNonBlank(status, "status");
     }
 
     public String getPriority() {
         return metadata.getPriority();
+    }
+
+    public String getRequestType() {
+        return metadata.getRequestType();
+    }
+
+    public RequestMetaData getMetadata() {
+        return metadata;
     }
 
     public String getAssignedTeam() {
@@ -67,5 +80,12 @@ public class MaintenanceRequest {
 
     public String getInitialStatus() {
         return metadata.getInitialStatus();
+    }
+
+    private String requireNonBlank(String value, String fieldName) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException(fieldName + " cannot be blank");
+        }
+        return value;
     }
 }
