@@ -1,24 +1,35 @@
 package PresentationLayer.UI;
 
-import java.io.*;
-import java.util.*;
+import BusinessLayer.Controller.IUnitController;
+import BusinessLayer.Domain.Unit;
 
 /**
- * 
+ * Bridge abstraction for unit forms.
  */
 public class UnitFormUI {
+    protected final IUnitController unitController;
 
     /**
-     * Default constructor
+     * Bridge constructor.
      */
-    public UnitFormUI() {
+    public UnitFormUI(IUnitController unitController) {
+        this.unitController = unitController;
     }
 
     /**
-     * 
+     * Legacy method kept for backward compatibility with scaffold usage.
      */
     public void submitUpdateUnit() {
-        // TODO implement here
+        throw new UnsupportedOperationException(
+                "Use submitUpdateUnit(unitID, rentalPrice, area, status) to delegate to the bridge controller.");
+    }
+
+    public Unit submitAddUnit(String unitNumber, double rentalPrice, double area, String status) {
+        return unitController.addUnit(unitNumber, rentalPrice, area, status);
+    }
+
+    public boolean submitUpdateUnit(int unitID, double rentalPrice, double area, String status) {
+        return unitController.updateUnit(unitID, rentalPrice, area, status);
     }
 
 }

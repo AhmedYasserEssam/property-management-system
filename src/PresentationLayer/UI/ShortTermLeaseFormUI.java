@@ -1,17 +1,18 @@
 package PresentationLayer.UI;
 
-import java.util.Date;
+import BusinessLayer.Controller.LeaseController;
 
 /**
  * Concrete product: short-term / vacation lease form.
  * Handles short-term lease submissions with different duration limits and daily rent rules.
  */
-public class ShortTermLeaseFormUI extends LeaseFormUI {
+public class ShortTermLeaseFormUI extends AdaptedLeaseFormUI {
 
-    @Override
-    public void submitLease(int tenantID, int unitID, Date start, Date end, double rent) {
-        System.out.println("[ShortTermLeaseForm] Lease submitted -> Tenant=" + tenantID
-                + ", Unit=" + unitID + ", DailyRate=" + rent + ", Start=" + start + ", End=" + end);
+    public ShortTermLeaseFormUI() {
+        this(null);
     }
 
+    public ShortTermLeaseFormUI(LeaseController leaseController) {
+        super("ShortTermLeaseForm", "DailyRate", leaseController);
+    }
 }

@@ -1,24 +1,31 @@
 package PresentationLayer.UI;
 
-import java.io.*;
-import java.util.*;
+import BusinessLayer.Controller.IPropertyController;
+import BusinessLayer.Domain.Property;
 
 /**
- * 
+ * Bridge abstraction for property forms.
  */
 public class PropertyFormUI {
+    protected final IPropertyController propertyController;
 
     /**
-     * Default constructor
+     * Bridge constructor.
      */
-    public PropertyFormUI() {
+    public PropertyFormUI(IPropertyController propertyController) {
+        this.propertyController = propertyController;
     }
 
     /**
-     * 
+     * Legacy method kept for backward compatibility with scaffold usage.
      */
     public void submitAddProperty() {
-        // TODO implement here
+        throw new UnsupportedOperationException(
+                "Use submitAddProperty(address, type, ownerID) to delegate to the bridge controller.");
+    }
+
+    public Property submitAddProperty(String address, String type, int ownerID) {
+        return propertyController.addProperty(address, type, ownerID);
     }
 
 }

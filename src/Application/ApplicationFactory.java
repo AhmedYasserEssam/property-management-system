@@ -11,19 +11,20 @@ import BusinessLayer.Controller.UnitController;
 import BusinessLayer.Domain.Clock;
 import BusinessLayer.Domain.DefaultLeaseExpiryStrategy;
 import BusinessLayer.Domain.IClock;
-import BusinessLayer.Factory.MaintenanceRequestFactoryResolver;
-import BusinessLayer.Factory.RequestMetaDataFactory;
-import BusinessLayer.Factory.TenantMaintenanceFactory;
-import BusinessLayer.Factory.UrgentMaintenanceFactory;
+import BusinessLayer.Notification.GenericMaintenanceNotifier;
+import BusinessLayer.Notification.MaintenanceNotifierResolver;
+import BusinessLayer.Notification.TenantMaintenanceNotifier;
+import BusinessLayer.Notification.UrgentMaintenanceNotifier;
 import BusinessLayer.Repository.IPaymentRepository;
 import BusinessLayer.Repository.PropertyStorageFactory;
+import DataLayer.DataAccess.ConsoleEmailNotificationSender;
 import DataLayer.DataAccess.ExpenseDB;
 import DataLayer.DataAccess.LeaseDB;
 import DataLayer.DataAccess.LoggingPaymentRepositoryDecorator;
-import DataLayer.DataAccess.MaintenanceDB;
+import DataLayer.DataAccess.MaintenanceRepositoryAdapter;
 import DataLayer.DataAccess.PaymentDB;
 import DataLayer.DataAccess.RelationalStorageFactory;
-import DataLayer.DataAccess.SqlServerConnectionManager;
+import DataLayer.DataAccess.ConsoleSmsNotificationSender;
 import DataLayer.DataAccess.TenantDB;
 import DataLayer.DataAccess.ValidatingPaymentRepositoryDecorator;
 
@@ -65,17 +66,17 @@ public final class ApplicationFactory {
     }
 
     public MaintenanceController createMaintenanceController() {
-        RequestMetaDataFactory metaFactory = RequestMetaDataFactory.getInstance();
-        MaintenanceRequestFactoryResolver resolver = new MaintenanceRequestFactoryResolver();
-        resolver.register(
-            "TENANT_REPORTED",
-            new TenantMaintenanceFactory(
-                metaFactory.getOrCreate("TENANT_REPORTED", "MEDIUM", "General Maintenance", "PENDING_REVIEW")));
-        resolver.register(
-            "URGENT",
-            new UrgentMaintenanceFactory(
-                metaFactory.getOrCreate("URGENT", "CRITICAL", "Emergency Crew", "IN_PROGRESS")));
-        return new MaintenanceController(new MaintenanceDB(SqlServerConnectionManager.getInstance(), resolver), resolver);
+        MaintenanceRepositoryAdapter maintenanceRepository = new MaintenanceRepositoryAdapter();
+
+        MaintenanceNotifierResolver notifierResolver = new MaintenanceNotifierResolver(
+            new GenericMaintenanceNotifier(new ConsoleEmailNotificationSender()));
+        notifierResolver.register("TENANT_REPORTED", new TenantMaintenanceNotifier(new ConsoleEmailNotificationSender()));
+        notifierResolver.register("URGENT", new UrgentMaintenanceNotifier(new ConsoleSmsNotificationSender()));
+
+        return new MaintenanceController(
+            maintenanceRepository,
+            maintenanceRepository.getFactoryResolver(),
+            notifierResolver);
     }
 
     public PropertyController createPropertyController() {

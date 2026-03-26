@@ -6,13 +6,14 @@ import BusinessLayer.Repository.IPropertyRepository;
 /**
  * Orchestrates property use cases.
  */
-public class PropertyController {
+public class PropertyController implements IPropertyController {
     private final IPropertyRepository propertyRepository;
 
     public PropertyController(IPropertyRepository propertyRepository) {
         this.propertyRepository = propertyRepository;
     }
 
+    @Override
     public Property addProperty(String address, String type, int ownerID) {
         Property property = new Property(0, ownerID, address, type);
         propertyRepository.save(property);
