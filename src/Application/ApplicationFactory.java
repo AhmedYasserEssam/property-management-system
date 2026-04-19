@@ -55,7 +55,9 @@ public final class ApplicationFactory {
     }
 
     public LeaseController createLeaseController() {
-        return new LeaseController(new LeaseDB(clock), clock, new DefaultLeaseExpiryStrategy());
+        ILeaseRepository leaseRepo = new LeaseDB(clock);
+        LeaseMediator leaseMediator = new LeaseMediator(leaseRepo, clock, new DefaultLeaseExpiryStrategy());
+        return new LeaseController(leaseMediator);
     }
 
     public PaymentController createPaymentController() {
@@ -73,10 +75,12 @@ public final class ApplicationFactory {
         notifierResolver.register("TENANT_REPORTED", new TenantMaintenanceNotifier(new ConsoleEmailNotificationSender()));
         notifierResolver.register("URGENT", new UrgentMaintenanceNotifier(new ConsoleSmsNotificationSender()));
 
-        return new MaintenanceController(
+        IMaintenanceMediator maintenanceMediator = new MaintenanceMediator(
             maintenanceRepository,
             maintenanceRepository.getFactoryResolver(),
             notifierResolver);
+
+        return new MaintenanceController(maintenanceMediator);
     }
 
     public PropertyController createPropertyController() {

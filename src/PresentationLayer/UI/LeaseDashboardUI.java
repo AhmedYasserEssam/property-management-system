@@ -6,12 +6,19 @@ import java.util.*;
 /**
  * 
  */
-public class LeaseDashboardUI {
+public class LeaseDashboardUI implements BusinessLayer.Mediator.ILeaseEventListener {
 
     /**
      * Default constructor
      */
     public LeaseDashboardUI() {
+    }
+
+    @Override
+    public void onLeaseEvent(String eventType, Object lease) {
+        if ("EXPIRING".equals(eventType) || "EXPIRED".equals(eventType)) {
+            showLeaseAlert(lease);
+        }
     }
 
     /**
