@@ -14,7 +14,7 @@ import java.util.Optional;
 /**
  * Payment data access implementation.
  */
-public class PaymentDB implements IPaymentRepository {
+public class PaymentDB extends BaseRepository<Payment> implements IPaymentRepository {
     private final IDbConnectionProvider connectionProvider;
 
     public PaymentDB() {
@@ -26,15 +26,12 @@ public class PaymentDB implements IPaymentRepository {
     }
 
     @Override
-    public void save(Payment payment) {
-        if (payment.getPaymentID() == 0) {
-            insert(payment);
-        } else {
-            update(payment);
-        }
+    protected int getEntityID(Payment payment) {
+        return payment.getPaymentID();
     }
 
-    private void insert(Payment payment) {
+    @Override
+    protected void insert(Payment payment) {
         String sql = "INSERT INTO Payments (leaseID, amount, paymentDate, paymentMethod) VALUES (?, ?, ?, ?)";
         try (Connection conn = connectionProvider.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -53,7 +50,8 @@ public class PaymentDB implements IPaymentRepository {
         }
     }
 
-    private void update(Payment payment) {
+    @Override
+    protected void update(Payment payment) {
         String sql = "UPDATE Payments SET leaseID = ?, amount = ?, paymentDate = ?, paymentMethod = ? WHERE paymentID = ?";
         try (Connection conn = connectionProvider.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {

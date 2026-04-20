@@ -14,7 +14,7 @@ import java.util.Optional;
 /**
  * Expense data access implementation.
  */
-public class ExpenseDB implements IExpenseRepository {
+public class ExpenseDB extends BaseRepository<Expense> implements IExpenseRepository {
     private final IDbConnectionProvider connectionProvider;
 
     public ExpenseDB() {
@@ -26,15 +26,12 @@ public class ExpenseDB implements IExpenseRepository {
     }
 
     @Override
-    public void save(Expense expense) {
-        if (expense.getExpenseID() == 0) {
-            insert(expense);
-        } else {
-            update(expense);
-        }
+    protected int getEntityID(Expense expense) {
+        return expense.getExpenseID();
     }
 
-    private void insert(Expense expense) {
+    @Override
+    protected void insert(Expense expense) {
         String sql = "INSERT INTO Expenses (propertyID, amount, category, expenseDate) VALUES (?, ?, ?, ?)";
         try (Connection conn = connectionProvider.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -53,7 +50,8 @@ public class ExpenseDB implements IExpenseRepository {
         }
     }
 
-    private void update(Expense expense) {
+    @Override
+    protected void update(Expense expense) {
         String sql = "UPDATE Expenses SET propertyID = ?, amount = ?, category = ?, expenseDate = ? WHERE expenseID = ?";
         try (Connection conn = connectionProvider.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {

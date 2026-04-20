@@ -100,7 +100,7 @@ public class MaintenanceDB implements IMaintenanceRepository {
     private MaintenanceRequest mapRow(ResultSet rs) throws SQLException {
         return resolver
                 .resolve(rs.getString("requestType"))
-                .reconstruct(
+                .reconstructRequest(
                         rs.getString("requestID"),
                         rs.getString("unitID"),
                         rs.getString("issueDescription"),

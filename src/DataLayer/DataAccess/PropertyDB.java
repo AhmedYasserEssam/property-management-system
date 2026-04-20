@@ -15,7 +15,7 @@ import java.util.Optional;
 /**
  * Property data access implementation.
  */
-public class PropertyDB implements IPropertyRepository {
+public class PropertyDB extends BaseRepository<Property> implements IPropertyRepository {
     private final IDbConnectionProvider connectionProvider;
 
     public PropertyDB() {
@@ -27,16 +27,17 @@ public class PropertyDB implements IPropertyRepository {
     }
 
     @Override
-    public void save(Property property) {
+    protected void beforeSave(Property property) {
         System.out.println("[RelationalPropertyDB] Property saving -> SQL Server");
-        if (property.getPropertyID() == 0) {
-            insert(property);
-        } else {
-            update(property);
-        }
     }
 
-    private void insert(Property property) {
+    @Override
+    protected int getEntityID(Property property) {
+        return property.getPropertyID();
+    }
+
+    @Override
+    protected void insert(Property property) {
         String sql = "INSERT INTO Properties (ownerID, address, propertyType) VALUES (?, ?, ?)";
         try (Connection conn = connectionProvider.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -54,7 +55,8 @@ public class PropertyDB implements IPropertyRepository {
         }
     }
 
-    private void update(Property property) {
+    @Override
+    protected void update(Property property) {
         String sql = "UPDATE Properties SET ownerID = ?, address = ?, propertyType = ? WHERE propertyID = ?";
         try (Connection conn = connectionProvider.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {

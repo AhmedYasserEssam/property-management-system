@@ -17,7 +17,7 @@ import java.util.Optional;
 /**
  * Data access implementation for leases.
  */
-public class LeaseDB implements ILeaseRepository {
+public class LeaseDB extends BaseRepository<Lease> implements ILeaseRepository {
     private final IClock clock;
     private final IDbConnectionProvider connectionProvider;
 
@@ -31,15 +31,12 @@ public class LeaseDB implements ILeaseRepository {
     }
 
     @Override
-    public void save(Lease lease) {
-        if (lease.getLeaseID() == 0) {
-            insert(lease);
-        } else {
-            update(lease);
-        }
+    protected int getEntityID(Lease lease) {
+        return lease.getLeaseID();
     }
 
-    private void insert(Lease lease) {
+    @Override
+    protected void insert(Lease lease) {
         String sql = "INSERT INTO Leases (tenantID, unitID, startDate, endDate, rentAmount, status) VALUES (?, ?, ?, ?, ?, ?)";
         try (Connection conn = connectionProvider.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -60,7 +57,8 @@ public class LeaseDB implements ILeaseRepository {
         }
     }
 
-    private void update(Lease lease) {
+    @Override
+    protected void update(Lease lease) {
         String sql = "UPDATE Leases SET tenantID = ?, unitID = ?, startDate = ?, endDate = ?, rentAmount = ?, status = ? WHERE leaseID = ?";
         try (Connection conn = connectionProvider.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {

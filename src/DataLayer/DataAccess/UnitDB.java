@@ -13,7 +13,7 @@ import java.util.Optional;
 /**
  * Unit data access implementation.
  */
-public class UnitDB implements IUnitRepository {
+public class UnitDB extends BaseRepository<Unit> implements IUnitRepository {
     private final IDbConnectionProvider connectionProvider;
 
     public UnitDB() {
@@ -25,16 +25,17 @@ public class UnitDB implements IUnitRepository {
     }
 
     @Override
-    public void save(Unit unit) {
+    protected void beforeSave(Unit unit) {
         System.out.println("[RelationalUnitDB] Unit saving -> SQL Server");
-        if (unit.getUnitID() == 0) {
-            insert(unit);
-        } else {
-            update(unit);
-        }
     }
 
-    private void insert(Unit unit) {
+    @Override
+    protected int getEntityID(Unit unit) {
+        return unit.getUnitID();
+    }
+
+    @Override
+    protected void insert(Unit unit) {
         String sql = "INSERT INTO Units (unitNumber, rentalPrice, area, status) VALUES (?, ?, ?, ?)";
         try (Connection conn = connectionProvider.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -53,7 +54,8 @@ public class UnitDB implements IUnitRepository {
         }
     }
 
-    private void update(Unit unit) {
+    @Override
+    protected void update(Unit unit) {
         String sql = "UPDATE Units SET unitNumber = ?, rentalPrice = ?, area = ?, status = ? WHERE unitID = ?";
         try (Connection conn = connectionProvider.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {

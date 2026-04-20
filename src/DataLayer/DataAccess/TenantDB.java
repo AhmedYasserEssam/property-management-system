@@ -13,7 +13,7 @@ import java.util.Optional;
 /**
  * Tenant data access implementation.
  */
-public class TenantDB implements ITenantRepository {
+public class TenantDB extends BaseRepository<Tenant> implements ITenantRepository {
     private final IDbConnectionProvider connectionProvider;
 
     public TenantDB() {
@@ -25,15 +25,12 @@ public class TenantDB implements ITenantRepository {
     }
 
     @Override
-    public void save(Tenant tenant) {
-        if (tenant.getTenantID() == 0) {
-            insert(tenant);
-        } else {
-            update(tenant);
-        }
+    protected int getEntityID(Tenant tenant) {
+        return tenant.getTenantID();
     }
 
-    private void insert(Tenant tenant) {
+    @Override
+    protected void insert(Tenant tenant) {
         String sql = "INSERT INTO Tenants (fullName, contactInfo) VALUES (?, ?)";
         try (Connection conn = connectionProvider.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -50,7 +47,8 @@ public class TenantDB implements ITenantRepository {
         }
     }
 
-    private void update(Tenant tenant) {
+    @Override
+    protected void update(Tenant tenant) {
         String sql = "UPDATE Tenants SET fullName = ?, contactInfo = ? WHERE tenantID = ?";
         try (Connection conn = connectionProvider.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
