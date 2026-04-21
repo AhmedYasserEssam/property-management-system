@@ -13,7 +13,7 @@ public class MaintenanceMediator implements IMaintenanceMediator {
     private final IMaintenanceRepository maintenanceRepository;
     private final MaintenanceRequestFactoryResolver factoryResolver;
     private final MaintenanceNotifierResolver notifierResolver;
-    private final List<<IMIMaintenanceEventListener> listeners = new ArrayList<>();
+    private final List<IMaintenanceEventListener> listeners = new ArrayList<>();
 
     public MaintenanceMediator(IMaintenanceRepository maintenanceRepository,
                                MaintenanceRequestFactoryResolver factoryResolver,
@@ -40,7 +40,7 @@ public class MaintenanceMediator implements IMaintenanceMediator {
 
     @Override
     public boolean setStatus(int reqID, String status) {
-        Optional<<MaintenanceMaintenanceRequest> existing = maintenanceRepository.findByID(reqID);
+        Optional<MaintenanceRequest> existing = maintenanceRepository.findByID(reqID);
         if (existing.isEmpty()) {
             return false;
         }

@@ -26,6 +26,7 @@ import BusinessLayer.Repository.ILeaseRepository;
 import BusinessLayer.Repository.IPaymentRepository;
 import BusinessLayer.Repository.PropertyStorageFactory;
 import DataLayer.DataAccess.ConsoleEmailNotificationSender;
+import DataLayer.DataAccess.AuthService;
 import DataLayer.DataAccess.ExpenseDB;
 import DataLayer.DataAccess.LeaseDB;
 import DataLayer.DataAccess.LoggingPaymentRepositoryDecorator;
@@ -36,6 +37,18 @@ import DataLayer.DataAccess.ConsoleSmsNotificationSender;
 import DataLayer.DataAccess.NoOpNotificationSender;
 import DataLayer.DataAccess.TenantDB;
 import DataLayer.DataAccess.ValidatingPaymentRepositoryDecorator;
+import PresentationLayer.UI.ExpenseFormUI;
+import PresentationLayer.UI.DesktopDashboardUI;
+import PresentationLayer.UI.LeaseDashboardUI;
+import PresentationLayer.UI.MainDashboardUI;
+import PresentationLayer.UI.PropertyFormUI;
+import PresentationLayer.UI.RequestFormUI;
+import PresentationLayer.UI.StandardRentalUIFactory;
+import PresentationLayer.UI.StatusUI;
+import PresentationLayer.UI.TenantFormUI;
+import PresentationLayer.UI.UnitFormUI;
+
+import java.util.Scanner;
 
 /**
  * Composition root that wires concrete implementations to controller abstractions.
@@ -108,5 +121,72 @@ public final class ApplicationFactory {
 
     public UnitController createUnitController() {
         return new UnitController(storageFactory.createUnitRepository());
+    }
+
+    public MainDashboardUI createMainDashboardUI() {
+        DashboardController dashboardController = createDashboardController();
+        ExpenseController expenseController = createExpenseController();
+        LeaseController leaseController = createLeaseController();
+        PaymentController paymentController = createPaymentController();
+        MaintenanceController maintenanceController = createMaintenanceController();
+        PropertyController propertyController = createPropertyController();
+        TenantController tenantController = createTenantController();
+        UnitController unitController = createUnitController();
+
+        StandardRentalUIFactory rentalUIFactory = new StandardRentalUIFactory(leaseController, paymentController);
+
+        PropertyFormUI propertyFormUI = new PropertyFormUI(propertyController);
+        TenantFormUI tenantFormUI = new TenantFormUI(tenantController);
+        UnitFormUI unitFormUI = new UnitFormUI(unitController);
+        RequestFormUI requestFormUI = new RequestFormUI(maintenanceController);
+        StatusUI statusUI = new StatusUI(maintenanceController);
+        ExpenseFormUI expenseFormUI = new ExpenseFormUI(expenseController);
+        LeaseDashboardUI leaseDashboardUI = new LeaseDashboardUI(leaseController);
+
+        return new MainDashboardUI(
+                "Real Estate Management Dashboard",
+                rentalUIFactory,
+                propertyFormUI,
+                tenantFormUI,
+                unitFormUI,
+                requestFormUI,
+                statusUI,
+                expenseFormUI,
+                leaseDashboardUI,
+                dashboardController,
+                new Scanner(System.in));
+    }
+
+    public DesktopDashboardUI createDesktopDashboardUI() {
+        DashboardController dashboardController = createDashboardController();
+        ExpenseController expenseController = createExpenseController();
+        LeaseController leaseController = createLeaseController();
+        PaymentController paymentController = createPaymentController();
+        MaintenanceController maintenanceController = createMaintenanceController();
+        PropertyController propertyController = createPropertyController();
+        TenantController tenantController = createTenantController();
+        UnitController unitController = createUnitController();
+
+        StandardRentalUIFactory rentalUIFactory = new StandardRentalUIFactory(leaseController, paymentController);
+
+        PropertyFormUI propertyFormUI = new PropertyFormUI(propertyController);
+        TenantFormUI tenantFormUI = new TenantFormUI(tenantController);
+        UnitFormUI unitFormUI = new UnitFormUI(unitController);
+        RequestFormUI requestFormUI = new RequestFormUI(maintenanceController);
+        StatusUI statusUI = new StatusUI(maintenanceController);
+        ExpenseFormUI expenseFormUI = new ExpenseFormUI(expenseController);
+        LeaseDashboardUI leaseDashboardUI = new LeaseDashboardUI(leaseController);
+
+        return new DesktopDashboardUI(
+                rentalUIFactory,
+                propertyFormUI,
+                tenantFormUI,
+                unitFormUI,
+                requestFormUI,
+                statusUI,
+                expenseFormUI,
+                leaseDashboardUI,
+            dashboardController,
+            new AuthService());
     }
 }

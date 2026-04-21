@@ -79,6 +79,11 @@ CREATE TABLE MaintenanceRequests (
     issueDescription NVARCHAR(1000) NOT NULL,
     requestDate      DATETIME2      NOT NULL,
     status           NVARCHAR(50)   NOT NULL DEFAULT 'OPEN',
+    requestType      NVARCHAR(100)  NOT NULL,
     CONSTRAINT FK_Maintenance_Units FOREIGN KEY (unitID) REFERENCES Units(unitID)
 );
+GO
+
+INSERT INTO Owners (name, contactInfo) VALUES ('Default Owner', 'owner123');
+INSERT INTO Tenants (fullName, contactInfo) VALUES ('Default Tenant', 'tenant123');
 GO

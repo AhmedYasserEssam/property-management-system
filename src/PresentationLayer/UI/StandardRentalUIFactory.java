@@ -1,6 +1,7 @@
 package PresentationLayer.UI;
 
 import BusinessLayer.Controller.LeaseController;
+import BusinessLayer.Controller.PaymentController;
 
 /**
  * Concrete factory: produces the standard (long-term) rental UI family.
@@ -8,13 +9,19 @@ import BusinessLayer.Controller.LeaseController;
  */
 public class StandardRentalUIFactory implements RentalUIFactory {
     private final LeaseController leaseController;
+    private final PaymentController paymentController;
 
     public StandardRentalUIFactory() {
-        this(null);
+        this(null, null);
     }
 
     public StandardRentalUIFactory(LeaseController leaseController) {
+        this(leaseController, null);
+    }
+
+    public StandardRentalUIFactory(LeaseController leaseController, PaymentController paymentController) {
         this.leaseController = leaseController;
+        this.paymentController = paymentController;
     }
 
     @Override
@@ -24,7 +31,7 @@ public class StandardRentalUIFactory implements RentalUIFactory {
 
     @Override
     public PaymentFormUI createPaymentForm() {
-        return new StandardPaymentFormUI();
+        return new StandardPaymentFormUI(paymentController);
     }
 
 }

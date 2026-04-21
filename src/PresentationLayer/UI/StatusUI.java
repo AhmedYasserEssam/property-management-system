@@ -1,25 +1,19 @@
 package PresentationLayer.UI;
 
-import java.io.*;
-import java.util.*;
+import BusinessLayer.Controller.IMaintenanceController;
 
 /**
- * 
+ * Bridge abstraction for maintenance status updates.
  */
 public class StatusUI {
+    private final IMaintenanceController maintenanceController;
 
-    /**
-     * Default constructor
-     */
-    public StatusUI() {
+    public StatusUI(IMaintenanceController maintenanceController) {
+        this.maintenanceController = maintenanceController;
     }
 
-    /**
-     * @param reqID
-     * @param status
-     */
-    public void updateStatus(int reqID, String status) {
-        // TODO implement here
+    public boolean updateStatus(int reqID, String status) {
+        return maintenanceController.setStatus(reqID, status);
     }
 
 }

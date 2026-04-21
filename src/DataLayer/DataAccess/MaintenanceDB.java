@@ -39,7 +39,7 @@ public class MaintenanceDB implements IMaintenanceRepository {
                 "VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = connectionProvider.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            ps.setString(1, request.getUnitID());
+            ps.setInt(1, parseUnitId(request.getUnitID()));
             ps.setString(2, request.getIssueDescription());
             ps.setTimestamp(3, Timestamp.valueOf(request.getRequestDate()));
             ps.setString(4, request.getStatus());
@@ -47,7 +47,7 @@ public class MaintenanceDB implements IMaintenanceRepository {
             ps.executeUpdate();
             try (ResultSet keys = ps.getGeneratedKeys()) {
                 if (keys.next()) {
-                    request.setRequestID(keys.getString(1));
+                    request.setRequestID(String.valueOf(keys.getInt(1)));
                 }
             }
         } catch (SQLException e) {
@@ -59,15 +59,16 @@ public class MaintenanceDB implements IMaintenanceRepository {
         if (request.getRequestDate() == null) {
             throw new IllegalArgumentException("requestDate cannot be null when updating maintenance request");
         }
-        String sql = "UPDATE MaintenanceRequests SET unitID = ?, issueDescription = ?, requestDate = ?, status = ? " +
+        String sql = "UPDATE MaintenanceRequests SET unitID = ?, issueDescription = ?, requestDate = ?, status = ?, requestType = ? " +
                 "WHERE requestID = ?";
         try (Connection conn = connectionProvider.getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, request.getUnitID());
+            ps.setInt(1, parseUnitId(request.getUnitID()));
             ps.setString(2, request.getIssueDescription());
             ps.setTimestamp(3, Timestamp.valueOf(request.getRequestDate()));
             ps.setString(4, request.getStatus());
-            ps.setString(5, request.getRequestID());
+            ps.setString(5, request.getRequestType());
+            ps.setInt(6, Integer.parseInt(request.getRequestID()));
             ps.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException("Failed to update maintenance request", e);
@@ -101,10 +102,18 @@ public class MaintenanceDB implements IMaintenanceRepository {
         return resolver
                 .resolve(rs.getString("requestType"))
                 .reconstructRequest(
-                        rs.getString("requestID"),
-                        rs.getString("unitID"),
+                        String.valueOf(rs.getInt("requestID")),
+                        String.valueOf(rs.getInt("unitID")),
                         rs.getString("issueDescription"),
                         rs.getTimestamp("requestDate").toLocalDateTime(),
                         rs.getString("status"));
+    }
+
+    private int parseUnitId(String unitID) {
+        try {
+            return Integer.parseInt(unitID);
+        } catch (NumberFormatException ex) {
+            throw new IllegalArgumentException("unitID must be a numeric value", ex);
+        }
     }
 }

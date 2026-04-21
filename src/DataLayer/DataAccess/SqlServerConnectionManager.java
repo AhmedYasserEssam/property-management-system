@@ -14,10 +14,15 @@ public final class SqlServerConnectionManager implements IDbConnectionProvider {
     private final String username;
     private final String password;
 
+    private static final String DEFAULT_DB_URL =
+            "jdbc:sqlserver://localhost:1433;databaseName=RealEstateDB;encrypt=true;trustServerCertificate=true";
+    private static final String DEFAULT_DB_USER = "sa";
+    private static final String DEFAULT_DB_PASSWORD = "HelloWorld123!";
+
     private SqlServerConnectionManager() {
-        this.connectionUrl = getRequiredEnv("RES_DB_URL");
-        this.username = getRequiredEnv("RES_DB_USER");
-        this.password = getRequiredEnv("RES_DB_PASSWORD");
+        this.connectionUrl = getOptionalEnv("RES_DB_URL", DEFAULT_DB_URL);
+        this.username = getOptionalEnv("RES_DB_USER", DEFAULT_DB_USER);
+        this.password = getOptionalEnv("RES_DB_PASSWORD", DEFAULT_DB_PASSWORD);
 
         try {
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
@@ -42,10 +47,10 @@ public final class SqlServerConnectionManager implements IDbConnectionProvider {
         return DriverManager.getConnection(connectionUrl, username, password);
     }
 
-    private String getRequiredEnv(String key) {
+    private String getOptionalEnv(String key, String defaultValue) {
         String value = System.getenv(key);
         if (value == null || value.isBlank()) {
-            throw new IllegalStateException("Missing required environment variable: " + key);
+            return defaultValue;
         }
         return value;
     }

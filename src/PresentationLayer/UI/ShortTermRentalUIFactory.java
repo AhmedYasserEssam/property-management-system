@@ -1,6 +1,7 @@
 package PresentationLayer.UI;
 
 import BusinessLayer.Controller.LeaseController;
+import BusinessLayer.Controller.PaymentController;
 
 /**
  * Concrete factory: produces the short-term / vacation rental UI family.
@@ -9,13 +10,19 @@ import BusinessLayer.Controller.LeaseController;
  */
 public class ShortTermRentalUIFactory implements RentalUIFactory {
     private final LeaseController leaseController;
+    private final PaymentController paymentController;
 
     public ShortTermRentalUIFactory() {
-        this(null);
+        this(null, null);
     }
 
     public ShortTermRentalUIFactory(LeaseController leaseController) {
+        this(leaseController, null);
+    }
+
+    public ShortTermRentalUIFactory(LeaseController leaseController, PaymentController paymentController) {
         this.leaseController = leaseController;
+        this.paymentController = paymentController;
     }
 
     @Override
@@ -25,7 +32,7 @@ public class ShortTermRentalUIFactory implements RentalUIFactory {
 
     @Override
     public PaymentFormUI createPaymentForm() {
-        return new ShortTermPaymentFormUI();
+        return new ShortTermPaymentFormUI(paymentController);
     }
 
 }

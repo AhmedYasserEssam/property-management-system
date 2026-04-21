@@ -80,4 +80,8 @@ public class Lease {
         this.status = "EXPIRED";
     }
 
+    public boolean isExpiring() {
+        return "EXPIRING".equals(status);
+    }
+
 }
