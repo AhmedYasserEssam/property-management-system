@@ -2,6 +2,7 @@ package BusinessLayer.Repository;
 
 import BusinessLayer.Domain.Lease;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
@@ -11,4 +12,8 @@ public interface ILeaseRepository {
     Optional<Lease> findByID(int leaseID);
 
     List<Lease> fetchLeasesNearEnd(int thresholdDays);
+
+    default Iterator<Lease> expiringLeasesIterator(int thresholdDays) {
+        return new ExpiringLeaseIterator(fetchLeasesNearEnd(thresholdDays));
+    }
 }

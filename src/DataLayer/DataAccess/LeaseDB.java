@@ -11,6 +11,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
@@ -114,6 +115,11 @@ public class LeaseDB extends BaseRepository<Lease> implements ILeaseRepository {
             throw new RuntimeException("Failed to fetch leases near end", e);
         }
         return result;
+    }
+
+    @Override
+    public Iterator<Lease> expiringLeasesIterator(int thresholdDays) {
+        return fetchLeasesNearEnd(thresholdDays).iterator();
     }
 
     private Lease mapRow(ResultSet rs) throws SQLException {

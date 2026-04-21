@@ -710,6 +710,11 @@ public class Main {
             return new ArrayList<>();
         }
 
+        @Override
+        public Iterator<Lease> expiringLeasesIterator(int thresholdDays) {
+            return fetchLeasesNearEnd(thresholdDays).iterator();
+        }
+
         public Lease getLastSaved() {
             return lastSaved;
         }

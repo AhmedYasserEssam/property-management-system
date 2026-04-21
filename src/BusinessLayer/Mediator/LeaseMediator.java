@@ -8,6 +8,7 @@ import BusinessLayer.Repository.ILeaseRepository;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,7 +16,7 @@ public class LeaseMediator implements ILeaseMediator {
     private final ILeaseRepository leaseRepository;
     private final IClock clock;
     private final LeaseExpiryStrategyResolver leaseExpiryStrategyResolver;
-    private final List<<IILeaseEventListener> listeners = new ArrayList<>();
+    private final List<ILeaseEventListener> listeners = new ArrayList<>();
 
     public LeaseMediator(ILeaseRepository leaseRepository, IClock clock,
                          LeaseExpiryStrategyResolver leaseExpiryStrategyResolver) {
@@ -41,9 +42,11 @@ public class LeaseMediator implements ILeaseMediator {
     }
 
     @Override
-    public List<<LeLease> checkExpiringLeases(int thresholdDays) {
-        List<<LeLease> leases = leaseRepository.fetchLeasesNearEnd(thresholdDays);
-        for (Lease lease : leases) {
+    public List<Lease> checkExpiringLeases(int thresholdDays) {
+        List<Lease> processedLeases = new ArrayList<>();
+        Iterator<Lease> leaseIterator = leaseRepository.expiringLeasesIterator(thresholdDays);
+        while (leaseIterator.hasNext()) {
+            Lease lease = leaseIterator.next();
             lease.markExpiringIfWithinDays(thresholdDays, clock.getCurrentDate());
             LeaseExpiryStrategy leaseExpiryStrategy = leaseExpiryStrategyResolver.resolve(lease);
             if (leaseExpiryStrategy.isExpired(lease, clock.getCurrentDate())) {
@@ -53,13 +56,14 @@ public class LeaseMediator implements ILeaseMediator {
                 notifyListeners("EXPIRING", lease);
             }
             leaseRepository.save(lease);
+            processedLeases.add(lease);
         }
-        return leases;
+        return processedLeases;
     }
 
     @Override
     public boolean handleLeaseProposal(int leaseID, double rent, int durationDays) {
-        Optional<<LeLease> existing = leaseRepository.findByID(leaseID);
+        Optional<Lease> existing = leaseRepository.findByID(leaseID);
         if (existing.isEmpty()) {
             return false;
         }

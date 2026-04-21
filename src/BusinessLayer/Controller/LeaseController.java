@@ -34,7 +34,7 @@ public class LeaseController {
         return leaseMediator.createLease(tenantID, unitID, start, end, rent);
     }
 
-    public List<<LeLease> checkExpiringLeases(int thresholdDays) {
+    public List<Lease> checkExpiringLeases(int thresholdDays) {
         return leaseMediator.checkExpiringLeases(thresholdDays);
     }
 
