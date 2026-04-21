@@ -1,17 +1,22 @@
 package PresentationLayer.UI;
 
+import BusinessLayer.Observer.LeaseEventBus;
+import BusinessLayer.Observer.LeaseStatusChangedEvent;
+import BusinessLayer.Observer.LeaseStatusObserver;
+
 import java.io.*;
 import java.util.*;
 
 /**
  * 
  */
-public class LeaseDashboardUI implements BusinessLayer.Mediator.ILeaseEventListener {
+public class LeaseDashboardUI implements BusinessLayer.Mediator.ILeaseEventListener, LeaseStatusObserver {
 
     /**
      * Default constructor
      */
     public LeaseDashboardUI() {
+        LeaseEventBus.getInstance().registerObserver(this);
     }
 
     @Override
@@ -19,6 +24,11 @@ public class LeaseDashboardUI implements BusinessLayer.Mediator.ILeaseEventListe
         if ("EXPIRING".equals(eventType) || "EXPIRED".equals(eventType)) {
             showLeaseAlert(lease);
         }
+    }
+
+    @Override
+    public void onLeaseStatusChanged(LeaseStatusChangedEvent event) {
+        showLeaseAlert(event.getLease());
     }
 
     /**

@@ -6,6 +6,8 @@ import BusinessLayer.Domain.LeaseExpiryStrategy;
 import BusinessLayer.Domain.LeaseExpiryStrategyResolver;
 import BusinessLayer.Mediator.ILeaseMediator;
 import BusinessLayer.Mediator.LeaseMediator;
+import BusinessLayer.Observer.LeaseEventBus;
+import BusinessLayer.Observer.LeaseStatusChangedEvent;
 import BusinessLayer.Repository.ILeaseRepository;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -35,7 +37,14 @@ public class LeaseController {
     }
 
     public List<Lease> checkExpiringLeases(int thresholdDays) {
-        return leaseMediator.checkExpiringLeases(thresholdDays);
+        List<Lease> processedLeases = leaseMediator.checkExpiringLeases(thresholdDays);
+        for (Lease lease : processedLeases) {
+            String status = lease.getStatus();
+            if ("EXPIRING".equals(status) || "EXPIRED".equals(status)) {
+                LeaseEventBus.getInstance().publish(new LeaseStatusChangedEvent(lease, status));
+            }
+        }
+        return processedLeases;
     }
 
     public boolean handleLeaseProposal(int leaseID, double rent, int durationDays) {
