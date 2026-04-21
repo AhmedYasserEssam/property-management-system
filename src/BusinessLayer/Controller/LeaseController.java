@@ -1,7 +1,12 @@
 package BusinessLayer.Controller;
 
+import BusinessLayer.Domain.IClock;
 import BusinessLayer.Domain.Lease;
+import BusinessLayer.Domain.LeaseExpiryStrategy;
+import BusinessLayer.Domain.LeaseExpiryStrategyResolver;
 import BusinessLayer.Mediator.ILeaseMediator;
+import BusinessLayer.Mediator.LeaseMediator;
+import BusinessLayer.Repository.ILeaseRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -13,6 +18,16 @@ public class LeaseController {
 
     public LeaseController(ILeaseMediator leaseMediator) {
         this.leaseMediator = leaseMediator;
+    }
+
+    public LeaseController(ILeaseRepository leaseRepository,
+                           IClock clock,
+                           LeaseExpiryStrategyResolver leaseExpiryStrategyResolver) {
+        this(new LeaseMediator(leaseRepository, clock, leaseExpiryStrategyResolver));
+    }
+
+    public LeaseController(ILeaseRepository leaseRepository, IClock clock, LeaseExpiryStrategy leaseExpiryStrategy) {
+        this(new LeaseMediator(leaseRepository, clock, leaseExpiryStrategy));
     }
 
     public Lease createLease(int tenantID, int unitID, LocalDateTime start, LocalDateTime end, double rent) {

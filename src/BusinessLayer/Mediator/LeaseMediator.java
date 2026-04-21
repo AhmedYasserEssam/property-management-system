@@ -3,6 +3,7 @@ package BusinessLayer.Mediator;
 import BusinessLayer.Domain.IClock;
 import BusinessLayer.Domain.Lease;
 import BusinessLayer.Domain.LeaseExpiryStrategy;
+import BusinessLayer.Domain.LeaseExpiryStrategyResolver;
 import BusinessLayer.Repository.ILeaseRepository;
 
 import java.time.LocalDateTime;
@@ -13,13 +14,18 @@ import java.util.Optional;
 public class LeaseMediator implements ILeaseMediator {
     private final ILeaseRepository leaseRepository;
     private final IClock clock;
-    private final LeaseExpiryStrategy leaseExpiryStrategy;
+    private final LeaseExpiryStrategyResolver leaseExpiryStrategyResolver;
     private final List<<IILeaseEventListener> listeners = new ArrayList<>();
 
-    public LeaseMediator(ILeaseRepository leaseRepository, IClock clock, LeaseExpiryStrategy leaseExpiryStrategy) {
+    public LeaseMediator(ILeaseRepository leaseRepository, IClock clock,
+                         LeaseExpiryStrategyResolver leaseExpiryStrategyResolver) {
         this.leaseRepository = leaseRepository;
         this.clock = clock;
-        this.leaseExpiryStrategy = leaseExpiryStrategy;
+        this.leaseExpiryStrategyResolver = leaseExpiryStrategyResolver;
+    }
+
+    public LeaseMediator(ILeaseRepository leaseRepository, IClock clock, LeaseExpiryStrategy leaseExpiryStrategy) {
+        this(leaseRepository, clock, new LeaseExpiryStrategyResolver(leaseExpiryStrategy));
     }
 
     @Override
@@ -39,6 +45,7 @@ public class LeaseMediator implements ILeaseMediator {
         List<<LeLease> leases = leaseRepository.fetchLeasesNearEnd(thresholdDays);
         for (Lease lease : leases) {
             lease.markExpiringIfWithinDays(thresholdDays, clock.getCurrentDate());
+            LeaseExpiryStrategy leaseExpiryStrategy = leaseExpiryStrategyResolver.resolve(lease);
             if (leaseExpiryStrategy.isExpired(lease, clock.getCurrentDate())) {
                 lease.markExpired();
                 notifyListeners("EXPIRED", lease);

@@ -13,10 +13,12 @@ import BusinessLayer.Domain.MaintenanceRequest;
 import BusinessLayer.Domain.EscalationMaintenanceRequestDecorator;
 import BusinessLayer.Domain.Lease;
 import BusinessLayer.Domain.DefaultLeaseExpiryStrategy;
+import BusinessLayer.Domain.LeaseExpiryStrategyResolver;
 import BusinessLayer.Domain.Payment;
 import BusinessLayer.Domain.Property;
 import BusinessLayer.Domain.RequestMetaData;
 import BusinessLayer.Domain.SlaMaintenanceRequestDecorator;
+import BusinessLayer.Domain.ShortTermLeaseExpiryStrategy;
 import BusinessLayer.Domain.Tenant;
 import BusinessLayer.Domain.Unit;
 import BusinessLayer.Domain.Clock;
@@ -29,6 +31,7 @@ import BusinessLayer.Factory.UrgentMaintenanceFactory;
 import BusinessLayer.Notification.GenericMaintenanceNotifier;
 import BusinessLayer.Notification.INotificationSender;
 import BusinessLayer.Notification.MaintenanceNotifierResolver;
+import BusinessLayer.Notification.NotificationSenderContext;
 import BusinessLayer.Notification.TenantMaintenanceNotifier;
 import BusinessLayer.Notification.UrgentMaintenanceNotifier;
 import BusinessLayer.Repository.ILeaseRepository;
@@ -41,6 +44,7 @@ import BusinessLayer.Repository.PropertyStorageFactory;
 import DataLayer.DataAccess.IDbConnectionProvider;
 import DataLayer.DataAccess.LoggingPaymentRepositoryDecorator;
 import DataLayer.DataAccess.MaintenanceRepositoryAdapter;
+import DataLayer.DataAccess.NoOpNotificationSender;
 import DataLayer.DataAccess.RelationalStorageFactory;
 import DataLayer.DataAccess.ValidatingPaymentRepositoryDecorator;
 import PresentationLayer.UI.RequestFormUI;
@@ -447,11 +451,13 @@ public class Main {
 
         RecordingNotificationSender emailSender = new RecordingNotificationSender("EMAIL");
         RecordingNotificationSender smsSender = new RecordingNotificationSender("SMS");
+        NotificationSenderContext notificationSenderContext =
+            new NotificationSenderContext(new NoOpNotificationSender());
 
         MaintenanceNotifierResolver notifierResolver = new MaintenanceNotifierResolver(
-                new GenericMaintenanceNotifier(emailSender));
-        notifierResolver.register("TENANT_REPORTED", new TenantMaintenanceNotifier(emailSender));
-        notifierResolver.register("URGENT", new UrgentMaintenanceNotifier(smsSender));
+            new GenericMaintenanceNotifier(notificationSenderContext, emailSender));
+        notifierResolver.register("TENANT_REPORTED", new TenantMaintenanceNotifier(notificationSenderContext, emailSender));
+        notifierResolver.register("URGENT", new UrgentMaintenanceNotifier(notificationSenderContext, smsSender));
 
         InMemoryMaintenanceRepository maintenanceRepository = new InMemoryMaintenanceRepository();
         IMaintenanceController maintenanceController = new MaintenanceController(
@@ -527,10 +533,13 @@ public class Main {
         System.out.println("--- Adapter Case 2: Date-based LeaseForm adapted to LocalDateTime API ---");
 
         InMemoryLeaseRepository leaseRepository = new InMemoryLeaseRepository();
+        LeaseExpiryStrategyResolver leaseStrategyResolver =
+            new LeaseExpiryStrategyResolver(new DefaultLeaseExpiryStrategy());
+        leaseStrategyResolver.register(LeaseExpiryStrategyResolver.SHORT_TERM, new ShortTermLeaseExpiryStrategy());
         LeaseController leaseController = new LeaseController(
                 leaseRepository,
                 Clock.getInstance(),
-                new DefaultLeaseExpiryStrategy());
+            leaseStrategyResolver);
 
         StandardLeaseFormUI form = new StandardLeaseFormUI(leaseController);
 

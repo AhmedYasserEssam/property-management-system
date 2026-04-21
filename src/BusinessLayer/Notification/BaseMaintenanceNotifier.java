@@ -6,10 +6,14 @@ import BusinessLayer.Domain.MaintenanceRequest;
  * Refined abstraction base that delegates delivery to a sender implementor.
  */
 public abstract class BaseMaintenanceNotifier implements MaintenanceNotifier {
-    protected final INotificationSender notificationSender;
+    protected final NotificationSenderContext notificationSenderContext;
+
+    protected BaseMaintenanceNotifier(NotificationSenderContext notificationSenderContext) {
+        this.notificationSenderContext = notificationSenderContext;
+    }
 
     protected BaseMaintenanceNotifier(INotificationSender notificationSender) {
-        this.notificationSender = notificationSender;
+        this(new NotificationSenderContext(notificationSender));
     }
 
     protected void send(MaintenanceRequest request, String subjectPrefix) {
@@ -19,6 +23,6 @@ public abstract class BaseMaintenanceNotifier implements MaintenanceNotifier {
                 + ", Priority=" + request.getPriority()
                 + ", Status=" + request.getStatus()
                 + ", Issue=" + request.getIssueDescription();
-        notificationSender.send(destination, subject, body);
+        notificationSenderContext.send(destination, subject, body);
     }
 }

@@ -4,6 +4,8 @@ import BusinessLayer.Domain.MaintenanceRequest;
 import BusinessLayer.Factory.MaintenanceRequestFactoryResolver;
 import BusinessLayer.Notification.GenericMaintenanceNotifier;
 import BusinessLayer.Notification.MaintenanceNotifierResolver;
+import BusinessLayer.Mediator.MaintenanceMediator;
+import BusinessLayer.Mediator.IMaintenanceMediator;
 import BusinessLayer.Repository.IMaintenanceRepository;
 import DataLayer.DataAccess.NoOpNotificationSender;
 
@@ -17,6 +19,12 @@ public class MaintenanceController implements IMaintenanceController {
 
     public MaintenanceController(IMaintenanceMediator maintenanceMediator) {
         this.maintenanceMediator = maintenanceMediator;
+    }
+
+    public MaintenanceController(IMaintenanceRepository maintenanceRepository,
+                                 MaintenanceRequestFactoryResolver factoryResolver,
+                                 MaintenanceNotifierResolver notifierResolver) {
+        this(new MaintenanceMediator(maintenanceRepository, factoryResolver, notifierResolver));
     }
 
     @Override

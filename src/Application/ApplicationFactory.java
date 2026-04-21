@@ -11,10 +11,18 @@ import BusinessLayer.Controller.UnitController;
 import BusinessLayer.Domain.Clock;
 import BusinessLayer.Domain.DefaultLeaseExpiryStrategy;
 import BusinessLayer.Domain.IClock;
+import BusinessLayer.Domain.LeaseExpiryStrategyResolver;
+import BusinessLayer.Domain.ShortTermLeaseExpiryStrategy;
 import BusinessLayer.Notification.GenericMaintenanceNotifier;
+import BusinessLayer.Notification.NotificationSenderContext;
 import BusinessLayer.Notification.MaintenanceNotifierResolver;
 import BusinessLayer.Notification.TenantMaintenanceNotifier;
 import BusinessLayer.Notification.UrgentMaintenanceNotifier;
+import BusinessLayer.Mediator.IMaintenanceMediator;
+import BusinessLayer.Mediator.ILeaseMediator;
+import BusinessLayer.Mediator.MaintenanceMediator;
+import BusinessLayer.Mediator.LeaseMediator;
+import BusinessLayer.Repository.ILeaseRepository;
 import BusinessLayer.Repository.IPaymentRepository;
 import BusinessLayer.Repository.PropertyStorageFactory;
 import DataLayer.DataAccess.ConsoleEmailNotificationSender;
@@ -25,6 +33,7 @@ import DataLayer.DataAccess.MaintenanceRepositoryAdapter;
 import DataLayer.DataAccess.PaymentDB;
 import DataLayer.DataAccess.RelationalStorageFactory;
 import DataLayer.DataAccess.ConsoleSmsNotificationSender;
+import DataLayer.DataAccess.NoOpNotificationSender;
 import DataLayer.DataAccess.TenantDB;
 import DataLayer.DataAccess.ValidatingPaymentRepositoryDecorator;
 
@@ -56,7 +65,9 @@ public final class ApplicationFactory {
 
     public LeaseController createLeaseController() {
         ILeaseRepository leaseRepo = new LeaseDB(clock);
-        LeaseMediator leaseMediator = new LeaseMediator(leaseRepo, clock, new DefaultLeaseExpiryStrategy());
+        LeaseExpiryStrategyResolver strategyResolver = new LeaseExpiryStrategyResolver(new DefaultLeaseExpiryStrategy());
+        strategyResolver.register(LeaseExpiryStrategyResolver.SHORT_TERM, new ShortTermLeaseExpiryStrategy());
+        ILeaseMediator leaseMediator = new LeaseMediator(leaseRepo, clock, strategyResolver);
         return new LeaseController(leaseMediator);
     }
 
@@ -69,11 +80,15 @@ public final class ApplicationFactory {
 
     public MaintenanceController createMaintenanceController() {
         MaintenanceRepositoryAdapter maintenanceRepository = new MaintenanceRepositoryAdapter();
+        NotificationSenderContext notificationSenderContext =
+            new NotificationSenderContext(new NoOpNotificationSender());
+        ConsoleEmailNotificationSender emailSender = new ConsoleEmailNotificationSender();
+        ConsoleSmsNotificationSender smsSender = new ConsoleSmsNotificationSender();
 
         MaintenanceNotifierResolver notifierResolver = new MaintenanceNotifierResolver(
-            new GenericMaintenanceNotifier(new ConsoleEmailNotificationSender()));
-        notifierResolver.register("TENANT_REPORTED", new TenantMaintenanceNotifier(new ConsoleEmailNotificationSender()));
-        notifierResolver.register("URGENT", new UrgentMaintenanceNotifier(new ConsoleSmsNotificationSender()));
+            new GenericMaintenanceNotifier(notificationSenderContext, emailSender));
+        notifierResolver.register("TENANT_REPORTED", new TenantMaintenanceNotifier(notificationSenderContext, emailSender));
+        notifierResolver.register("URGENT", new UrgentMaintenanceNotifier(notificationSenderContext, smsSender));
 
         IMaintenanceMediator maintenanceMediator = new MaintenanceMediator(
             maintenanceRepository,
